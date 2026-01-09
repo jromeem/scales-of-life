@@ -1,5 +1,8 @@
 const { useState, useEffect, useRef } = React;
 
+// debug flag
+const DEBUG = false;
+
 // State machine constants
 const STATES = {
   NORMAL: 'NORMAL',
@@ -22,18 +25,18 @@ const VideoInstallation = () => {
   // State machine for each biological level
   const [levelStates, setLevelStates] = useState({
     predator: STATES.NORMAL,
-    population: STATES.NORMAL,
+    flock: STATES.NORMAL,
     individual: STATES.NORMAL,
-    organ: STATES.NORMAL,
+    muscle: STATES.NORMAL,
     microscopic: STATES.NORMAL
   });
 
   // Track if we're playing a transition video
   const [transitioningLevels, setTransitioningLevels] = useState({
     predator: null,
-    population: null,
+    flock: null,
     individual: null,
-    organ: null,
+    muscle: null,
     microscopic: null
   });
 
@@ -45,7 +48,7 @@ const VideoInstallation = () => {
       dataPoints: ['Hunger', 'Energy', 'Tilt/Orientation', 'Prey Proximity', 'Sensory Confidence', 'Success Probability']
     },
     {
-      id: 'population',
+      id: 'flock',
       title: 'POPULATION',
       subtitle: 'Flock moving as one',
       dataPoints: ['Collective Energy', 'Cohesion', 'Variance', 'Obstacles', 'Signal Propagation Delay']
@@ -57,7 +60,7 @@ const VideoInstallation = () => {
       dataPoints: ['Experience Level', 'Fear Level', 'Fatigue', 'Calories Expended', 'Neighbor Proximity', 'Reaction Latency', 'Survival Probability']
     },
     {
-      id: 'organ',
+      id: 'muscle',
       title: 'ORGAN',
       subtitle: 'Muscle contracting',
       dataPoints: ['Force Production', 'Electrical Activation', 'Intracellular Calcium', 'Stiffness', 'Lactic Acid', 'Heat']
@@ -70,14 +73,22 @@ const VideoInstallation = () => {
     }
   ];
 
-  // Get video path based on current state
+  // Get video path based on current state using new directory structure
   const getVideoPath = (levelId, currentState, transition = null) => {
+    // New structure: videos/[level]/[file].mp4
     if (transition) {
-      // Playing a transition video
-      return `videos/${levelId}_${transition.toLowerCase()}.mp4`;
+      // Playing the single transition video
+      return `videos/${levelId}/transition.mp4`;
     }
-    // Playing a state video
-    return `videos/${levelId}_${currentState.toLowerCase()}.mp4`;
+
+    if (currentState === STATES.DEAD) {
+      // For DEAD state, freeze on last frame of excited or show static
+      // Since we don't have a dead.mp4, we'll pause the excited video
+      return `videos/${levelId}/excited.mp4`;
+    }
+
+    // Playing a state video (normal or excited)
+    return `videos/${levelId}/${currentState.toLowerCase()}.mp4`;
   };
 
   // State machine transition logic
@@ -192,8 +203,8 @@ const VideoInstallation = () => {
     // Predator: Goes to EXCITED (hunting)
     transitionState('predator', STATES.EXCITED);
 
-    // Population: Goes to EXCITED (fleeing)
-    transitionState('population', STATES.EXCITED);
+    // Flock: Goes to EXCITED (fleeing)
+    transitionState('flock', STATES.EXCITED);
 
     // Individual: Randomize - some escape (EXCITED), some die (DEAD)
     const survives = Math.random() > 0.3; // 70% survival rate
@@ -203,8 +214,8 @@ const VideoInstallation = () => {
       transitionState('individual', STATES.DEAD);
     }
 
-    // Organ: Goes to EXCITED (muscles working hard)
-    transitionState('organ', STATES.EXCITED);
+    // Muscle: Goes to EXCITED (muscles working hard)
+    transitionState('muscle', STATES.EXCITED);
 
     // Microscopic: Goes to EXCITED (molecular activity increases)
     transitionState('microscopic', STATES.EXCITED);
@@ -217,11 +228,11 @@ const VideoInstallation = () => {
       if (levelStates.predator === STATES.EXCITED) {
         transitionState('predator', STATES.NORMAL);
       }
-      if (levelStates.population === STATES.EXCITED) {
-        transitionState('population', STATES.NORMAL);
+      if (levelStates.flock === STATES.EXCITED) {
+        transitionState('flock', STATES.NORMAL);
       }
-      if (levelStates.organ === STATES.EXCITED) {
-        transitionState('organ', STATES.NORMAL);
+      if (levelStates.muscle === STATES.EXCITED) {
+        transitionState('muscle', STATES.NORMAL);
       }
       if (levelStates.microscopic === STATES.EXCITED) {
         transitionState('microscopic', STATES.NORMAL);
@@ -273,7 +284,8 @@ const VideoInstallation = () => {
           const transition = transitioningLevels[section.id];
           const videoPath = getVideoPath(section.id, currentState, transition);
           const isDead = currentState === STATES.DEAD;
-          const isExcited = currentState === STATES.EXCITED || predatorActive;
+          // const isExcited = currentState === STATES.EXCITED || predatorActive;
+          const isExcited = false;
 
           return (
             <div
@@ -293,7 +305,7 @@ const VideoInstallation = () => {
                   }}
                   src={videoPath}
                   autoPlay
-                  loop={!transition} // Don't loop transition videos
+                  loop={!transition && !isDead} // Don't loop transition videos or dead state
                   muted
                   playsInline
                 />
@@ -308,9 +320,9 @@ const VideoInstallation = () => {
                 />
 
                 {/* Video Title Overlay */}
-                <div className="absolute top-4 left-4 z-10 bg-black bg-opacity-50 px-3 py-2">
-                  <h2 className="text-xl font-bold tracking-wider">{section.title}</h2>
-                  <p className="text-xs text-gray-300 mt-1">{section.subtitle}</p>
+                {DEBUG && <div className="absolute top-4 left-4 z-10 bg-black bg-opacity-50 px-3 py-2">
+                  {/* <h2 className="text-xl font-bold tracking-wider">{section.title}</h2> */}
+                  {/* <p className="text-xs text-gray-300 mt-1">{section.subtitle}</p> */}
                   {/* State indicator */}
                   <div className="mt-2 flex gap-2 items-center">
                     <span className={`text-xs px-2 py-0.5 rounded ${currentState === STATES.DEAD ? 'bg-gray-700 text-gray-400' :
@@ -320,13 +332,12 @@ const VideoInstallation = () => {
                       {transition ? '→ TRANSITION' : currentState}
                     </span>
                   </div>
-                </div>
+                </div>}
 
                 {/* Video placeholder if file not found */}
                 <div className="absolute inset-0 flex items-center justify-center text-gray-700 text-xs pointer-events-none">
                   <div className="text-center">
-                    <div className="text-sm mb-2">Place video file:</div>
-                    <div className="font-mono">{videoPath}</div>
+                    <div className="font-mono">{DEBUG && videoPath}</div>
                   </div>
                 </div>
               </div>
