@@ -1,7 +1,7 @@
 const { useState, useEffect, useRef } = React;
 
 // debug flag
-const DEBUG = false;
+const DEBUG = true;
 
 // State machine constants
 const STATES = {
@@ -21,6 +21,10 @@ const TRANSITIONS = {
 const VideoInstallation = () => {
   const [predatorActive, setPredatorActive] = useState(false);
   const [dataValues, setDataValues] = useState({});
+
+  // Store target values and lerp rates for smooth transitions
+  const targetValuesRef = useRef({});
+  const lerpRatesRef = useRef({});
 
   // State machine for each biological level
   const [levelStates, setLevelStates] = useState({
@@ -177,22 +181,75 @@ const VideoInstallation = () => {
     return 0.7;
   };
 
-  // Simulate data updates based on state
+  // Initialize lerp rates for each data point (only once)
   useEffect(() => {
-    const interval = setInterval(() => {
-      const newValues = {};
+    const rates = {};
+    videoSections.forEach(section => {
+      section.dataPoints.forEach(point => {
+        const key = `${section.id}-${point}`;
+        // Random lerp rate between 0.02 (very slow) and 0.3 (very fast)
+        rates[key] = 0.02 + Math.random() * 0.28;
+      });
+    });
+    lerpRatesRef.current = rates;
+  }, []);
+
+  // Generate new target values periodically
+  useEffect(() => {
+    const targetInterval = setInterval(() => {
+      const newTargets = {};
       videoSections.forEach(section => {
         section.dataPoints.forEach(point => {
           const key = `${section.id}-${point}`;
           const multiplier = getDataMultiplier(section.id, point);
           const baseValue = Math.random() * 100;
-          newValues[key] = (baseValue * multiplier).toFixed(1);
+          newTargets[key] = baseValue * multiplier;
         });
       });
-      setDataValues(newValues);
-    }, 500);
+      targetValuesRef.current = newTargets;
+    }, 800); // Generate new targets every 800ms
 
-    return () => clearInterval(interval);
+    return () => clearInterval(targetInterval);
+  }, [levelStates]);
+
+  // Smooth lerping animation loop (runs at ~60fps)
+  useEffect(() => {
+    let animationFrameId;
+
+    const lerp = (start, end, rate) => {
+      return start + (end - start) * rate;
+    };
+
+    const animate = () => {
+      setDataValues(prevValues => {
+        const newValues = {};
+
+        videoSections.forEach(section => {
+          section.dataPoints.forEach(point => {
+            const key = `${section.id}-${point}`;
+            const currentValue = parseFloat(prevValues[key]) || 0;
+            const targetValue = targetValuesRef.current[key] || currentValue;
+            const lerpRate = lerpRatesRef.current[key] || 0.1;
+
+            // Lerp towards target value
+            const newValue = lerp(currentValue, targetValue, lerpRate);
+            newValues[key] = newValue.toFixed(1);
+          });
+        });
+
+        return newValues;
+      });
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
   }, [levelStates]);
 
   // Predator activation - triggers state transitions across all levels
