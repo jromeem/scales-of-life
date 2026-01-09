@@ -1,5 +1,8 @@
 const { useState, useEffect, useRef } = React;
 
+// Import FSM configuration from global scope
+const { FSM_CONFIG, STATES, TRANSITIONS } = window;
+
 // Debug configuration
 const DEBUG_CONFIG = {
   INITIAL_STATE: false,  // Start with debug off
@@ -8,21 +11,6 @@ const DEBUG_CONFIG = {
   SHOW_LERP_RATES: true, // Show lerp rates on data points
   SHOW_VIDEO_PATHS: true,// Show video file paths
   SHOW_HISTORY: true,    // Show transition history
-};
-
-// State machine constants
-const STATES = {
-  NORMAL: 'NORMAL',
-  EXCITED: 'EXCITED',
-  DEAD: 'DEAD'
-};
-
-// Transition types for storytelling
-const TRANSITIONS = {
-  NORMAL_TO_EXCITED: 'NORMAL_TO_EXCITED',     // Running away, chasing prey, fleeing
-  EXCITED_TO_NORMAL: 'EXCITED_TO_NORMAL',     // Flying, resting, eating
-  EXCITED_TO_DEAD: 'EXCITED_TO_DEAD',         // Predator wins, disaster, biological failure
-  NORMAL_TO_DEAD: 'NORMAL_TO_DEAD'            // Natural decay, aging
 };
 
 const VideoInstallation = () => {
@@ -40,14 +28,15 @@ const VideoInstallation = () => {
   const frameTimesRef = useRef([]);
   const lastFrameTimeRef = useRef(performance.now());
 
-  // State machine for each biological level
-  const [levelStates, setLevelStates] = useState({
-    predator: STATES.NORMAL,
-    flock: STATES.NORMAL,
-    individual: STATES.NORMAL,
-    muscle: STATES.NORMAL,
-    microscopic: STATES.NORMAL
-  });
+  // Initialize FSM instance
+  const fsmRef = useRef(null);
+  if (!fsmRef.current) {
+    fsmRef.current = new BiologicalFSM(FSM_CONFIG);
+  }
+  const fsm = fsmRef.current;
+
+  // State machine for each biological level (synced with FSM)
+  const [levelStates, setLevelStates] = useState(fsm.getAllStates());
 
   // Track if we're playing a transition video
   const [transitioningLevels, setTransitioningLevels] = useState({
@@ -57,6 +46,43 @@ const VideoInstallation = () => {
     muscle: null,
     microscopic: null
   });
+
+  // Subscribe to FSM events
+  useEffect(() => {
+    const unsubscribe = fsm.subscribe((eventType, data) => {
+      if (eventType === 'transition') {
+        // Update transition history for debug
+        if (debugMode && DEBUG_CONFIG.SHOW_HISTORY) {
+          setTransitionHistory(prev => [
+            data,
+            ...prev.slice(0, 9)
+          ]);
+        }
+
+        // Handle transition video playback
+        if (data.playTransition) {
+          setTransitioningLevels(prev => ({
+            ...prev,
+            [data.levelId]: data.transitionType
+          }));
+
+          // After 3 seconds, clear transition and sync states
+          setTimeout(() => {
+            setTransitioningLevels(prev => ({
+              ...prev,
+              [data.levelId]: null
+            }));
+            setLevelStates(fsm.getAllStates());
+          }, 3000);
+        } else {
+          // Immediate state sync
+          setLevelStates(fsm.getAllStates());
+        }
+      }
+    });
+
+    return unsubscribe;
+  }, [fsm, debugMode]);
 
   const videoSections = [
     {
@@ -109,74 +135,9 @@ const VideoInstallation = () => {
     return `videos/${levelId}/${currentState.toLowerCase()}.mp4`;
   };
 
-  // State machine transition logic
-  const canTransition = (fromState, toState) => {
-    if (fromState === STATES.DEAD) return false; // Dead is terminal
-
-    const validTransitions = {
-      [STATES.NORMAL]: [STATES.EXCITED, STATES.DEAD],
-      [STATES.EXCITED]: [STATES.NORMAL, STATES.DEAD],
-      [STATES.DEAD]: []
-    };
-
-    return validTransitions[fromState]?.includes(toState) || false;
-  };
-
-  // Perform state transition with optional transition video
+  // Wrapper for FSM transition (for backwards compatibility)
   const transitionState = (levelId, toState, playTransition = true) => {
-    const fromState = levelStates[levelId];
-
-    if (!canTransition(fromState, toState)) {
-      console.log(`Invalid transition: ${fromState} -> ${toState} for ${levelId}`);
-      return;
-    }
-
-    // Determine transition type for storytelling
-    let transitionType = null;
-    if (fromState === STATES.NORMAL && toState === STATES.EXCITED) {
-      transitionType = TRANSITIONS.NORMAL_TO_EXCITED;
-    } else if (fromState === STATES.EXCITED && toState === STATES.NORMAL) {
-      transitionType = TRANSITIONS.EXCITED_TO_NORMAL;
-    } else if (fromState === STATES.EXCITED && toState === STATES.DEAD) {
-      transitionType = TRANSITIONS.EXCITED_TO_DEAD;
-    } else if (fromState === STATES.NORMAL && toState === STATES.DEAD) {
-      transitionType = TRANSITIONS.NORMAL_TO_DEAD;
-    }
-
-    // Log transition to history (for debug)
-    if (debugMode && DEBUG_CONFIG.SHOW_HISTORY) {
-      const timestamp = new Date().toLocaleTimeString();
-      setTransitionHistory(prev => [
-        { levelId, fromState, toState, transitionType, timestamp },
-        ...prev.slice(0, 9) // Keep last 10 transitions
-      ]);
-    }
-
-    if (playTransition && transitionType) {
-      // Mark as transitioning
-      setTransitioningLevels(prev => ({
-        ...prev,
-        [levelId]: transitionType
-      }));
-
-      // After transition video (~3 seconds), update actual state
-      setTimeout(() => {
-        setLevelStates(prev => ({
-          ...prev,
-          [levelId]: toState
-        }));
-        setTransitioningLevels(prev => ({
-          ...prev,
-          [levelId]: null
-        }));
-      }, 3000);
-    } else {
-      // Immediate state change
-      setLevelStates(prev => ({
-        ...prev,
-        [levelId]: toState
-      }));
-    }
+    fsm.transition(levelId, toState, { playTransition });
   };
 
   // Get data range multiplier based on state
@@ -238,6 +199,7 @@ const VideoInstallation = () => {
   // Smooth lerping animation loop (runs at ~60fps)
   useEffect(() => {
     let animationFrameId;
+    let evaluationCounter = 0;
 
     const lerp = (start, end, rate) => {
       return start + (end - start) * rate;
@@ -278,7 +240,17 @@ const VideoInstallation = () => {
           });
         });
 
-        return newValues;
+        // Apply data coupling from FSM
+        const coupledValues = fsm.applyDataCoupling(newValues, fsm.getAllStates());
+
+        // Evaluate transitions every 30 frames (~2 times per second at 60fps)
+        evaluationCounter++;
+        if (evaluationCounter >= 30) {
+          fsm.evaluateTransitions(coupledValues);
+          evaluationCounter = 0;
+        }
+
+        return coupledValues;
       });
 
       animationFrameId = requestAnimationFrame(animate);
@@ -291,52 +263,21 @@ const VideoInstallation = () => {
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [levelStates, debugMode]);
+  }, [fsm, debugMode]);
 
-  // Predator activation - triggers state transitions across all levels
+  // Predator activation - inject hunger spike to trigger autonomous cascade
   const handlePredatorActivation = () => {
     setPredatorActive(true);
 
-    // Cascade effect: predator attacks, affecting all levels
-    // Predator: Goes to EXCITED (hunting)
-    transitionState('predator', STATES.EXCITED);
+    // Instead of forcing state transitions, spike predator's Hunger data
+    // This will trigger the autonomous FSM evaluation
+    const hungerKey = 'predator-Hunger';
+    targetValuesRef.current[hungerKey] = 95; // Spike above threshold (>80)
 
-    // Flock: Goes to EXCITED (fleeing)
-    transitionState('flock', STATES.EXCITED);
-
-    // Individual: Randomize - some escape (EXCITED), some die (DEAD)
-    const survives = Math.random() > 0.3; // 70% survival rate
-    if (survives) {
-      transitionState('individual', STATES.EXCITED);
-    } else {
-      transitionState('individual', STATES.DEAD);
-    }
-
-    // Muscle: Goes to EXCITED (muscles working hard)
-    transitionState('muscle', STATES.EXCITED);
-
-    // Microscopic: Goes to EXCITED (molecular activity increases)
-    transitionState('microscopic', STATES.EXCITED);
-
-    // After 5 seconds, things start to calm down (return to normal or stay excited)
+    // Visual feedback clears after 2 seconds
     setTimeout(() => {
       setPredatorActive(false);
-
-      // Return some levels to normal
-      if (levelStates.predator === STATES.EXCITED) {
-        transitionState('predator', STATES.NORMAL);
-      }
-      if (levelStates.flock === STATES.EXCITED) {
-        transitionState('flock', STATES.NORMAL);
-      }
-      if (levelStates.muscle === STATES.EXCITED) {
-        transitionState('muscle', STATES.NORMAL);
-      }
-      if (levelStates.microscopic === STATES.EXCITED) {
-        transitionState('microscopic', STATES.NORMAL);
-      }
-      // Individual stays in whatever state it ended up in
-    }, 5000);
+    }, 2000);
   };
 
   // Listen for keyboard shortcuts (for testing different scenarios)
