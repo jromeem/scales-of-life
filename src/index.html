@@ -29,11 +29,11 @@
 <body>
     <div id="root"></div>
 
-    <!-- Load FSM modules first -->
-    <script src="BiologicalFSM.js"></script>
-    <script src="fsmConfig.js"></script>
+    <!-- Load FSM modules first (plain JavaScript, not JSX) -->
+    <script type="text/javascript" src="BiologicalFSM.js"></script>
+    <script type="text/javascript" src="fsmConfig.js"></script>
 
-    <!-- Load main React app -->
+    <!-- Load main React app (needs Babel transformation) -->
     <script type="text/babel" src="app.jsx"></script>
 </body>
 
