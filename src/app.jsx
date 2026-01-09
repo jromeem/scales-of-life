@@ -1,162 +1,371 @@
 const { useState, useEffect, useRef } = React;
 
+// State machine constants
+const STATES = {
+  NORMAL: 'NORMAL',
+  EXCITED: 'EXCITED',
+  DEAD: 'DEAD'
+};
+
+// Transition types for storytelling
+const TRANSITIONS = {
+  NORMAL_TO_EXCITED: 'NORMAL_TO_EXCITED',     // Running away, chasing prey, fleeing
+  EXCITED_TO_NORMAL: 'EXCITED_TO_NORMAL',     // Flying, resting, eating
+  EXCITED_TO_DEAD: 'EXCITED_TO_DEAD',         // Predator wins, disaster, biological failure
+  NORMAL_TO_DEAD: 'NORMAL_TO_DEAD'            // Natural decay, aging
+};
+
 const VideoInstallation = () => {
   const [predatorActive, setPredatorActive] = useState(false);
   const [dataValues, setDataValues] = useState({});
+
+  // State machine for each biological level
+  const [levelStates, setLevelStates] = useState({
+    predator: STATES.NORMAL,
+    population: STATES.NORMAL,
+    individual: STATES.NORMAL,
+    organ: STATES.NORMAL,
+    microscopic: STATES.NORMAL
+  });
+
+  // Track if we're playing a transition video
+  const [transitioningLevels, setTransitioningLevels] = useState({
+    predator: null,
+    population: null,
+    individual: null,
+    organ: null,
+    microscopic: null
+  });
 
   const videoSections = [
     {
       id: 'predator',
       title: 'PREDATOR',
       subtitle: 'Bird of prey in high-tension waiting',
-      videoPath: 'videos/predator.mp4',
       dataPoints: ['Hunger', 'Energy', 'Tilt/Orientation', 'Prey Proximity', 'Sensory Confidence', 'Success Probability']
     },
     {
       id: 'population',
       title: 'POPULATION',
       subtitle: 'Flock moving as one',
-      videoPath: 'videos/flock.mp4',
       dataPoints: ['Collective Energy', 'Cohesion', 'Variance', 'Obstacles', 'Signal Propagation Delay']
     },
     {
       id: 'individual',
       title: 'INDIVIDUAL',
       subtitle: 'Single bird in flight',
-      videoPath: 'videos/individual.mp4',
       dataPoints: ['Experience Level', 'Fear Level', 'Fatigue', 'Calories Expended', 'Neighbor Proximity', 'Reaction Latency', 'Survival Probability']
     },
     {
       id: 'organ',
       title: 'ORGAN',
       subtitle: 'Muscle contracting',
-      videoPath: 'videos/muscle.mp4',
       dataPoints: ['Force Production', 'Electrical Activation', 'Intracellular Calcium', 'Stiffness', 'Lactic Acid', 'Heat']
     },
     {
       id: 'microscopic',
       title: 'MICROSCOPIC',
       subtitle: 'Molecular cross-bridge cycling',
-      videoPath: 'videos/molecular.mp4',
       dataPoints: ['Cross-bridge Attach/Detach', 'ATP Consumption', 'Binding Probability', 'Molecular Fatigue', 'Thermal Noise']
     }
   ];
 
-  // Simulate data updates
+  // Get video path based on current state
+  const getVideoPath = (levelId, currentState, transition = null) => {
+    if (transition) {
+      // Playing a transition video
+      return `videos/${levelId}_${transition.toLowerCase()}.mp4`;
+    }
+    // Playing a state video
+    return `videos/${levelId}_${currentState.toLowerCase()}.mp4`;
+  };
+
+  // State machine transition logic
+  const canTransition = (fromState, toState) => {
+    if (fromState === STATES.DEAD) return false; // Dead is terminal
+
+    const validTransitions = {
+      [STATES.NORMAL]: [STATES.EXCITED, STATES.DEAD],
+      [STATES.EXCITED]: [STATES.NORMAL, STATES.DEAD],
+      [STATES.DEAD]: []
+    };
+
+    return validTransitions[fromState]?.includes(toState) || false;
+  };
+
+  // Perform state transition with optional transition video
+  const transitionState = (levelId, toState, playTransition = true) => {
+    const fromState = levelStates[levelId];
+
+    if (!canTransition(fromState, toState)) {
+      console.log(`Invalid transition: ${fromState} -> ${toState} for ${levelId}`);
+      return;
+    }
+
+    // Determine transition type for storytelling
+    let transitionType = null;
+    if (fromState === STATES.NORMAL && toState === STATES.EXCITED) {
+      transitionType = TRANSITIONS.NORMAL_TO_EXCITED;
+    } else if (fromState === STATES.EXCITED && toState === STATES.NORMAL) {
+      transitionType = TRANSITIONS.EXCITED_TO_NORMAL;
+    } else if (fromState === STATES.EXCITED && toState === STATES.DEAD) {
+      transitionType = TRANSITIONS.EXCITED_TO_DEAD;
+    } else if (fromState === STATES.NORMAL && toState === STATES.DEAD) {
+      transitionType = TRANSITIONS.NORMAL_TO_DEAD;
+    }
+
+    if (playTransition && transitionType) {
+      // Mark as transitioning
+      setTransitioningLevels(prev => ({
+        ...prev,
+        [levelId]: transitionType
+      }));
+
+      // After transition video (~3 seconds), update actual state
+      setTimeout(() => {
+        setLevelStates(prev => ({
+          ...prev,
+          [levelId]: toState
+        }));
+        setTransitioningLevels(prev => ({
+          ...prev,
+          [levelId]: null
+        }));
+      }, 3000);
+    } else {
+      // Immediate state change
+      setLevelStates(prev => ({
+        ...prev,
+        [levelId]: toState
+      }));
+    }
+  };
+
+  // Get data range multiplier based on state
+  const getDataMultiplier = (levelId, dataPoint) => {
+    const state = levelStates[levelId];
+
+    if (state === STATES.DEAD) {
+      // Dead state: most values near zero, some decay indicators high
+      if (dataPoint.includes('Heat') || dataPoint.includes('Lactic Acid')) {
+        return 0.3; // Residual
+      }
+      return 0.1; // Mostly dead
+    }
+
+    if (state === STATES.EXCITED) {
+      // Excited state: high values, lots of activity
+      if (dataPoint.includes('Fear') || dataPoint.includes('Energy') ||
+        dataPoint.includes('Force') || dataPoint.includes('ATP')) {
+        return 1.5; // Amplified
+      }
+      return 1.2; // Generally higher
+    }
+
+    // Normal state: baseline values
+    return 0.7;
+  };
+
+  // Simulate data updates based on state
   useEffect(() => {
     const interval = setInterval(() => {
       const newValues = {};
       videoSections.forEach(section => {
         section.dataPoints.forEach(point => {
           const key = `${section.id}-${point}`;
-          newValues[key] = (Math.random() * 100).toFixed(1);
+          const multiplier = getDataMultiplier(section.id, point);
+          const baseValue = Math.random() * 100;
+          newValues[key] = (baseValue * multiplier).toFixed(1);
         });
       });
       setDataValues(newValues);
     }, 500);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [levelStates]);
 
+  // Predator activation - triggers state transitions across all levels
   const handlePredatorActivation = () => {
     setPredatorActive(true);
-    setTimeout(() => setPredatorActive(false), 3000);
+
+    // Cascade effect: predator attacks, affecting all levels
+    // Predator: Goes to EXCITED (hunting)
+    transitionState('predator', STATES.EXCITED);
+
+    // Population: Goes to EXCITED (fleeing)
+    transitionState('population', STATES.EXCITED);
+
+    // Individual: Randomize - some escape (EXCITED), some die (DEAD)
+    const survives = Math.random() > 0.3; // 70% survival rate
+    if (survives) {
+      transitionState('individual', STATES.EXCITED);
+    } else {
+      transitionState('individual', STATES.DEAD);
+    }
+
+    // Organ: Goes to EXCITED (muscles working hard)
+    transitionState('organ', STATES.EXCITED);
+
+    // Microscopic: Goes to EXCITED (molecular activity increases)
+    transitionState('microscopic', STATES.EXCITED);
+
+    // After 5 seconds, things start to calm down (return to normal or stay excited)
+    setTimeout(() => {
+      setPredatorActive(false);
+
+      // Return some levels to normal
+      if (levelStates.predator === STATES.EXCITED) {
+        transitionState('predator', STATES.NORMAL);
+      }
+      if (levelStates.population === STATES.EXCITED) {
+        transitionState('population', STATES.NORMAL);
+      }
+      if (levelStates.organ === STATES.EXCITED) {
+        transitionState('organ', STATES.NORMAL);
+      }
+      if (levelStates.microscopic === STATES.EXCITED) {
+        transitionState('microscopic', STATES.NORMAL);
+      }
+      // Individual stays in whatever state it ended up in
+    }, 5000);
   };
 
-  // Listen for keyboard shortcut (for testing) or hardware button
+  // Listen for keyboard shortcuts (for testing different scenarios)
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (e.code === 'Space') {
         handlePredatorActivation();
       }
+
+      // Testing shortcuts for state transitions
+      if (e.code === 'Digit1') {
+        // Force all to NORMAL
+        Object.keys(levelStates).forEach(level => {
+          if (levelStates[level] !== STATES.NORMAL) {
+            transitionState(level, STATES.NORMAL, false);
+          }
+        });
+      }
+      if (e.code === 'Digit2') {
+        // Force all to EXCITED
+        Object.keys(levelStates).forEach(level => {
+          if (levelStates[level] !== STATES.DEAD) {
+            transitionState(level, STATES.EXCITED, false);
+          }
+        });
+      }
+      if (e.code === 'Digit3') {
+        // Force individual to DEAD (demonstration)
+        transitionState('individual', STATES.DEAD);
+      }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, []);
+  }, [levelStates]);
 
   return (
     <div className="w-full h-screen bg-black text-white font-mono overflow-hidden">
       {/* Main Grid Container */}
       <div className="h-full flex flex-col p-3 gap-2">
-        {videoSections.map((section, index) => (
-          <div
-            key={section.id}
-            className={`flex-1 flex gap-3 border transition-all duration-300 ${predatorActive ? 'border-red-500 border-2' : 'border-gray-800'
-              }`}
-          >
-            {/* Video Section */}
-            <div className="flex-[2] bg-gray-900 relative overflow-hidden">
-              {/* Video Element */}
-              <video
-                className="absolute inset-0 w-full h-full object-cover"
-                style={{
-                  filter: 'grayscale(100%) contrast(1.2)',
-                  mixBlendMode: 'screen'
-                }}
-                src={section.videoPath}
-                autoPlay
-                loop
-                muted
-                playsInline
-              />
+        {videoSections.map((section, index) => {
+          const currentState = levelStates[section.id];
+          const transition = transitioningLevels[section.id];
+          const videoPath = getVideoPath(section.id, currentState, transition);
+          const isDead = currentState === STATES.DEAD;
+          const isExcited = currentState === STATES.EXCITED || predatorActive;
 
-              {/* Grainy overlay effect */}
-              <div
-                className="absolute inset-0 opacity-30 pointer-events-none mix-blend-overlay"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E")`,
-                  backgroundSize: 'cover'
-                }}
-              />
+          return (
+            <div
+              key={section.id}
+              className={`flex-1 flex gap-3 border transition-all duration-300 ${isExcited ? 'border-red-500 border-2' : isDead ? 'border-gray-600' : 'border-gray-800'
+                }`}
+            >
+              {/* Video Section */}
+              <div className={`flex-[2] bg-gray-900 relative overflow-hidden ${isDead ? 'opacity-50' : ''}`}>
+                {/* Video Element */}
+                <video
+                  key={videoPath} // Force re-render when video changes
+                  className="absolute inset-0 w-full h-full object-cover"
+                  style={{
+                    filter: isDead ? 'grayscale(100%) contrast(0.5) brightness(0.3)' : 'grayscale(100%) contrast(1.2)',
+                    mixBlendMode: 'screen'
+                  }}
+                  src={videoPath}
+                  autoPlay
+                  loop={!transition} // Don't loop transition videos
+                  muted
+                  playsInline
+                />
 
-              {/* Video Title Overlay */}
-              <div className="absolute top-4 left-4 z-10 bg-black bg-opacity-50 px-3 py-2">
-                <h2 className="text-xl font-bold tracking-wider">{section.title}</h2>
-                <p className="text-xs text-gray-300 mt-1">{section.subtitle}</p>
+                {/* Grainy overlay effect */}
+                <div
+                  className="absolute inset-0 opacity-30 pointer-events-none mix-blend-overlay"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E")`,
+                    backgroundSize: 'cover'
+                  }}
+                />
+
+                {/* Video Title Overlay */}
+                <div className="absolute top-4 left-4 z-10 bg-black bg-opacity-50 px-3 py-2">
+                  <h2 className="text-xl font-bold tracking-wider">{section.title}</h2>
+                  <p className="text-xs text-gray-300 mt-1">{section.subtitle}</p>
+                  {/* State indicator */}
+                  <div className="mt-2 flex gap-2 items-center">
+                    <span className={`text-xs px-2 py-0.5 rounded ${currentState === STATES.DEAD ? 'bg-gray-700 text-gray-400' :
+                      currentState === STATES.EXCITED ? 'bg-red-600 text-white' :
+                        'bg-blue-600 text-white'
+                      }`}>
+                      {transition ? '→ TRANSITION' : currentState}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Video placeholder if file not found */}
+                <div className="absolute inset-0 flex items-center justify-center text-gray-700 text-xs pointer-events-none">
+                  <div className="text-center">
+                    <div className="text-sm mb-2">Place video file:</div>
+                    <div className="font-mono">{videoPath}</div>
+                  </div>
+                </div>
               </div>
 
-              {/* Video placeholder if file not found */}
-              <div className="absolute inset-0 flex items-center justify-center text-gray-700 text-xs pointer-events-none">
-                <div className="text-center">
-                  <div className="text-sm mb-2">Place video file:</div>
-                  <div className="font-mono">{section.videoPath}</div>
+              {/* Data Display Section */}
+              <div className="flex-1 bg-black border-l border-gray-800 p-3 overflow-hidden">
+                <div className="space-y-1.5">
+                  {section.dataPoints.map((dataPoint, dpIndex) => {
+                    const key = `${section.id}-${dataPoint}`;
+                    const value = dataValues[key] || '0.0';
+                    const width = parseFloat(value);
+
+                    return (
+                      <div key={dpIndex} className="flex items-center justify-between text-xs">
+                        <span className="text-gray-400 uppercase tracking-wide text-[10px] flex-1 pr-2">
+                          {dataPoint}
+                        </span>
+                        <div className="flex items-center gap-2 flex-1">
+                          <div className="flex-1 h-1 bg-gray-800 relative overflow-hidden">
+                            <div
+                              className={`h-full transition-all duration-300 ${isDead ? 'bg-gray-600' :
+                                isExcited ? 'bg-red-500' : 'bg-white'
+                                }`}
+                              style={{ width: `${width}%` }}
+                            />
+                          </div>
+                          <span className={`font-mono w-12 text-right text-[11px] ${isDead ? 'text-gray-600' : 'text-white'
+                            }`}>
+                            {value}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
-
-            {/* Data Display Section */}
-            <div className="flex-1 bg-black border-l border-gray-800 p-3 overflow-hidden">
-              <div className="space-y-1.5">
-                {section.dataPoints.map((dataPoint, dpIndex) => {
-                  const key = `${section.id}-${dataPoint}`;
-                  const value = dataValues[key] || '0.0';
-                  const width = parseFloat(value);
-
-                  return (
-                    <div key={dpIndex} className="flex items-center justify-between text-xs">
-                      <span className="text-gray-400 uppercase tracking-wide text-[10px] flex-1 pr-2">
-                        {dataPoint}
-                      </span>
-                      <div className="flex items-center gap-2 flex-1">
-                        <div className="flex-1 h-1 bg-gray-800 relative overflow-hidden">
-                          <div
-                            className={`h-full bg-white transition-all duration-300 ${predatorActive ? 'bg-red-500' : 'bg-white'
-                              }`}
-                            style={{ width: `${width}%` }}
-                          />
-                        </div>
-                        <span className="text-white font-mono w-12 text-right text-[11px]">
-                          {value}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Predator Status Indicator */}
@@ -167,8 +376,9 @@ const VideoInstallation = () => {
       )}
 
       {/* Instructions (hidden in production) */}
-      <div className="fixed bottom-4 left-4 text-gray-700 text-xs">
-        Press SPACE to activate predator (testing) | ESC to exit
+      <div className="fixed bottom-4 left-4 text-gray-700 text-xs space-y-1">
+        <div>Press SPACE to activate predator (testing) | ESC to exit</div>
+        <div>Press 1: Reset to NORMAL | 2: All EXCITED | 3: Kill individual</div>
       </div>
     </div>
   );
