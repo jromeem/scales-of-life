@@ -5,8 +5,8 @@ let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    fullscreen: true,
-    frame: false,
+    fullscreen: false,
+    frame: true,
     backgroundColor: '#000000',
     webPreferences: {
       nodeIntegration: true,
