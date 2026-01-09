@@ -1,7 +1,14 @@
 const { useState, useEffect, useRef } = React;
 
-// debug flag
-const DEBUG = false;
+// Debug configuration
+const DEBUG_CONFIG = {
+  INITIAL_STATE: false,  // Start with debug off
+  SHOW_FPS: true,        // Show FPS counter
+  SHOW_STATES: true,     // Show state badges on videos
+  SHOW_LERP_RATES: true, // Show lerp rates on data points
+  SHOW_VIDEO_PATHS: true,// Show video file paths
+  SHOW_HISTORY: true,    // Show transition history
+};
 
 // State machine constants
 const STATES = {
@@ -21,10 +28,17 @@ const TRANSITIONS = {
 const VideoInstallation = () => {
   const [predatorActive, setPredatorActive] = useState(false);
   const [dataValues, setDataValues] = useState({});
+  const [debugMode, setDebugMode] = useState(DEBUG_CONFIG.INITIAL_STATE);
 
   // Store target values and lerp rates for smooth transitions
   const targetValuesRef = useRef({});
   const lerpRatesRef = useRef({});
+
+  // Debug metrics
+  const [fps, setFps] = useState(0);
+  const [transitionHistory, setTransitionHistory] = useState([]);
+  const frameTimesRef = useRef([]);
+  const lastFrameTimeRef = useRef(performance.now());
 
   // State machine for each biological level
   const [levelStates, setLevelStates] = useState({
@@ -129,6 +143,15 @@ const VideoInstallation = () => {
       transitionType = TRANSITIONS.NORMAL_TO_DEAD;
     }
 
+    // Log transition to history (for debug)
+    if (debugMode && DEBUG_CONFIG.SHOW_HISTORY) {
+      const timestamp = new Date().toLocaleTimeString();
+      setTransitionHistory(prev => [
+        { levelId, fromState, toState, transitionType, timestamp },
+        ...prev.slice(0, 9) // Keep last 10 transitions
+      ]);
+    }
+
     if (playTransition && transitionType) {
       // Mark as transitioning
       setTransitioningLevels(prev => ({
@@ -221,6 +244,24 @@ const VideoInstallation = () => {
     };
 
     const animate = () => {
+      // Calculate FPS for debug
+      if (debugMode && DEBUG_CONFIG.SHOW_FPS) {
+        const now = performance.now();
+        const deltaTime = now - lastFrameTimeRef.current;
+        lastFrameTimeRef.current = now;
+
+        frameTimesRef.current.push(deltaTime);
+        if (frameTimesRef.current.length > 60) {
+          frameTimesRef.current.shift();
+        }
+
+        // Update FPS every 30 frames
+        if (frameTimesRef.current.length === 60) {
+          const avgFrameTime = frameTimesRef.current.reduce((a, b) => a + b) / frameTimesRef.current.length;
+          setFps(Math.round(1000 / avgFrameTime));
+        }
+      }
+
       setDataValues(prevValues => {
         const newValues = {};
 
@@ -250,7 +291,7 @@ const VideoInstallation = () => {
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [levelStates]);
+  }, [levelStates, debugMode]);
 
   // Predator activation - triggers state transitions across all levels
   const handlePredatorActivation = () => {
@@ -303,6 +344,11 @@ const VideoInstallation = () => {
     const handleKeyPress = (e) => {
       if (e.code === 'Space') {
         handlePredatorActivation();
+      }
+
+      // Toggle debug mode with 'D' key
+      if (e.code === 'KeyD') {
+        setDebugMode(prev => !prev);
       }
 
       // Testing shortcuts for state transitions
@@ -377,9 +423,9 @@ const VideoInstallation = () => {
                 />
 
                 {/* Video Title Overlay */}
-                {DEBUG && <div className="absolute top-4 left-4 z-10 bg-black bg-opacity-50 px-3 py-2">
-                  {/* <h2 className="text-xl font-bold tracking-wider">{section.title}</h2> */}
-                  {/* <p className="text-xs text-gray-300 mt-1">{section.subtitle}</p> */}
+                {debugMode && DEBUG_CONFIG.SHOW_STATES && <div className="absolute top-4 left-4 z-10 bg-black bg-opacity-80 px-3 py-2 rounded">
+                  <h2 className="text-sm font-bold tracking-wider">{section.title}</h2>
+                  <p className="text-xs text-gray-400 mt-0.5">{section.subtitle}</p>
                   {/* State indicator */}
                   <div className="mt-2 flex gap-2 items-center">
                     <span className={`text-xs px-2 py-0.5 rounded ${currentState === STATES.DEAD ? 'bg-gray-700 text-gray-400' :
@@ -394,7 +440,7 @@ const VideoInstallation = () => {
                 {/* Video placeholder if file not found */}
                 <div className="absolute inset-0 flex items-center justify-center text-gray-700 text-xs pointer-events-none">
                   <div className="text-center">
-                    <div className="font-mono">{DEBUG && videoPath}</div>
+                    <div className="font-mono">{debugMode && DEBUG_CONFIG.SHOW_VIDEO_PATHS && videoPath}</div>
                   </div>
                 </div>
               </div>
@@ -406,11 +452,18 @@ const VideoInstallation = () => {
                     const key = `${section.id}-${dataPoint}`;
                     const value = dataValues[key] || '0.0';
                     const width = parseFloat(value);
+                    const lerpRate = lerpRatesRef.current[key];
+                    const targetValue = targetValuesRef.current[key];
 
                     return (
                       <div key={dpIndex} className="flex items-center justify-between text-xs">
                         <span className="text-gray-400 uppercase tracking-wide text-[10px] flex-1 pr-2">
                           {dataPoint}
+                          {debugMode && DEBUG_CONFIG.SHOW_LERP_RATES && lerpRate && (
+                            <span className="text-[8px] text-gray-600 ml-1">
+                              ({lerpRate.toFixed(2)})
+                            </span>
+                          )}
                         </span>
                         <div className="flex items-center gap-2 flex-1">
                           <div className="flex-1 h-1 bg-gray-800 relative overflow-hidden">
@@ -424,6 +477,9 @@ const VideoInstallation = () => {
                           <span className={`font-mono w-12 text-right text-[11px] ${isDead ? 'text-gray-600' : 'text-white'
                             }`}>
                             {value}
+                            {debugMode && DEBUG_CONFIG.SHOW_LERP_RATES && targetValue !== undefined && (
+                              <span className="text-[8px] text-yellow-500">→{targetValue.toFixed(0)}</span>
+                            )}
                           </span>
                         </div>
                       </div>
@@ -443,9 +499,64 @@ const VideoInstallation = () => {
         </div>
       )}
 
-      {/* Instructions (hidden in production) */}
+      {/* Debug Panel */}
+      {debugMode && (
+        <div className="fixed top-4 right-4 bg-black bg-opacity-90 border border-gray-700 rounded p-4 text-xs space-y-3 max-w-md z-50">
+          <div className="flex items-center justify-between border-b border-gray-700 pb-2">
+            <span className="text-green-400 font-bold">DEBUG MODE</span>
+            <span className="text-gray-500">Press D to toggle</span>
+          </div>
+
+          {/* FPS Counter */}
+          {DEBUG_CONFIG.SHOW_FPS && (
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400">FPS:</span>
+              <span className={`font-mono font-bold ${fps >= 55 ? 'text-green-400' : fps >= 30 ? 'text-yellow-400' : 'text-red-400'}`}>
+                {fps}
+              </span>
+            </div>
+          )}
+
+          {/* Current States */}
+          <div className="space-y-1">
+            <div className="text-gray-400 font-bold">Current States:</div>
+            {Object.entries(levelStates).map(([level, state]) => (
+              <div key={level} className="flex items-center justify-between text-[10px]">
+                <span className="text-gray-500 uppercase">{level}:</span>
+                <span className={`px-2 py-0.5 rounded ${state === STATES.DEAD ? 'bg-gray-700 text-gray-400' :
+                  state === STATES.EXCITED ? 'bg-red-600 text-white' : 'bg-blue-600 text-white'
+                  }`}>
+                  {state}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Transition History */}
+          {DEBUG_CONFIG.SHOW_HISTORY && transitionHistory.length > 0 && (
+            <div className="space-y-1">
+              <div className="text-gray-400 font-bold">Recent Transitions:</div>
+              <div className="space-y-1 max-h-32 overflow-y-auto">
+                {transitionHistory.map((transition, idx) => (
+                  <div key={idx} className="text-[9px] text-gray-500 font-mono">
+                    <span className="text-gray-600">{transition.timestamp}</span>
+                    {' '}
+                    <span className="text-blue-400">{transition.levelId}</span>
+                    {' '}
+                    <span className="text-gray-600">{transition.fromState}</span>
+                    →
+                    <span className="text-yellow-400">{transition.toState}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Instructions */}
       <div className="fixed bottom-4 left-4 text-gray-700 text-xs space-y-1">
-        <div>Press SPACE to activate predator (testing) | ESC to exit</div>
+        <div>Press SPACE to activate predator | D for debug | ESC to exit</div>
         <div>Press 1: Reset to NORMAL | 2: All EXCITED | 3: Kill individual</div>
       </div>
     </div>
