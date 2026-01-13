@@ -664,76 +664,146 @@ const VideoInstallation = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [levelStates]);
 
+  // Shape configurations for organic layout
+  const shapeConfigs = [
+    {
+      id: 'predator',
+      clipPath: 'clip-shape1',
+      style: { left: '66.511px', top: '75.203px', width: '1198.350px', height: '1538.933px' },
+      dataPosition: { right: '20px', top: '100px' }
+    },
+    {
+      id: 'flock',
+      clipPath: 'clip-shape2',
+      style: { left: '1112.338px', top: '75.203px', width: '934.026px', height: '1655.733px' },
+      dataPosition: { right: '20px', top: '100px' }
+    },
+    {
+      id: 'individual',
+      clipPath: 'clip-shape3',
+      style: { left: '66.511px', top: '1539.549px', width: '1783.151px', height: '850.347px' },
+      dataPosition: { right: '20px', top: '20px' }
+    },
+    {
+      id: 'muscle',
+      clipPath: 'clip-shape4',
+      style: { left: '66.511px', top: '2335.882px', width: '1381.924px', height: '1236.027px' },
+      dataPosition: { right: '20px', top: '20px' }
+    },
+    {
+      id: 'microscopic',
+      clipPath: 'clip-shape5',
+      style: { left: '875.418px', top: '1991.949px', width: '1170.946px', height: '1579.947px' },
+      dataPosition: { right: '20px', top: '100px' }
+    }
+  ];
+
   return (
-    <div className="w-full h-screen bg-black text-white font-mono overflow-hidden">
-      {/* Main Grid Container */}
-      <div className="h-full flex flex-col p-3 gap-2">
-        {videoSections.map((section, index) => {
+    <div style={{
+      margin: 0,
+      padding: 0,
+      width: '100vw',
+      height: '100vh',
+      overflow: 'hidden',
+      backgroundColor: '#000',
+      position: 'relative'
+    }}>
+      {/* SVG Clip Paths */}
+      <svg style={{ position: 'absolute', top: '-999px', left: '-999px', width: 0, height: 0 }}>
+        <defs>
+          <clipPath id="clip-shape1">
+            <path d="m 0,0 c -341.37,0 -341.37,0 -341.37,-599.28 0,-436.22 0.02,-554.92 184.56,-554.92 68.98,0 163.72,16.58 293.91,39.35 478.47,83.71 478.47,83.71 341.36,599.28 C 341.37,0 341.37,0 0,0"
+              transform="matrix(1.3333333,0,0,-1.3333333,455.147,0)" />
+          </clipPath>
+          <clipPath id="clip-shape2">
+            <path d="m 0,0 c -376.99,0 -376.99,0 -239.44,-517.22 137.55,-517.22 137.55,-517.22 370.31,-652.08 77.29,-43 130.32,-72.5 166.69,-72.5 79.45,0 79.43,140.67 79.43,588.69 C 376.99,0 376.99,0 0,0"
+              transform="matrix(1.3333333,0,0,-1.3333333,431.0273,0)" />
+          </clipPath>
+          <clipPath id="clip-shape3">
+            <path d="m 0,0 c -86.63,0 -208.17,-21.26 -430.28,-60.12 -490.64,-85.84 -490.64,-85.84 -490.64,-267.96 0,-182.12 0,-182.12 233.19,-261.43 87.26,-29.68 141.88,-48.25 200.89,-48.25 98.69,0 209.69,51.93 506.35,190.71 474.06,221.77 474.06,221.77 257.45,347.27 C 158.42,-31.1 104.73,0 0,0"
+              transform="matrix(1.3333333,0,0,-1.3333333,1228.2249,0)" />
+          </clipPath>
+          <clipPath id="clip-shape4">
+            <path d="m 0,0 c -82.77,0 -82.76,-98.57 -82.76,-443.81 0,-483.21 0,-483.21 573.01,-483.21 573.01,0 573.01,0 226.94,406.02 C 371.12,-114.98 371.12,-114.98 144.18,-37.8 79.38,-15.75 33.08,0 0,0"
+              transform="matrix(1.3333333,0,0,-1.3333333,110.9666,0)" />
+          </clipPath>
+          <clipPath id="clip-shape5">
+            <path d="m 0,0 c -71.5,0 -183.98,-52.62 -363.28,-136.5 -481.18,-225.1 -481.18,-225.1 -130.28,-636.78 350.9,-411.68 350.9,-411.68 490.15,-411.68 139.25,0 139.25,0 139.25,635.4 C 124.58,-149.19 120.39,0 0,0"
+              transform="matrix(1.3333333,0,0,-1.3333333,989.462,0)" />
+          </clipPath>
+        </defs>
+      </svg>
+
+      {/* Main Container with organic shapes */}
+      <div style={{
+        margin: 0,
+        padding: 0,
+        width: '2112px',
+        height: '3648px',
+        position: 'relative',
+        transform: 'scale(0.5)',
+        transformOrigin: 'top left'
+      }}>
+        {shapeConfigs.map((config, index) => {
+          const section = videoSections.find(s => s.id === config.id);
           const currentState = levelStates[section.id];
           const transition = transitioningLevels[section.id];
           const videoPath = getVideoPath(section.id, currentState, transition);
           const isDead = currentState === STATES.DEAD;
-          // const isExcited = currentState === STATES.EXCITED || predatorActive;
-          const isExcited = false;
 
           return (
-            <div
-              key={section.id}
-              className={`flex-1 flex gap-3 border transition-all duration-300 ${isExcited ? 'border-red-500 border-2' : isDead ? 'border-gray-600' : 'border-gray-800'
-                }`}
-            >
-              {/* Video Section */}
-              <div className={`flex-[2] bg-gray-900 relative overflow-hidden ${isDead ? 'opacity-50' : ''}`}>
-                {/* Video Element */}
-                <video
-                  key={videoPath} // Force re-render when video changes
-                  className="absolute inset-0 w-full h-full object-cover"
-                  style={{
-                    filter: isDead ? 'grayscale(100%) contrast(0.5) brightness(0.3)' : 'grayscale(100%) contrast(1.2)',
-                    mixBlendMode: 'screen'
-                  }}
-                  src={videoPath}
-                  autoPlay
-                  loop={!transition && !isDead} // Don't loop transition videos or dead state
-                  muted
-                  playsInline
-                />
+            <div key={section.id}>
+              {/* Video with organic clip-path */}
+              <video
+                key={videoPath}
+                style={{
+                  position: 'absolute',
+                  ...config.style,
+                  objectFit: 'cover',
+                  clipPath: `url(#${config.clipPath})`,
+                  filter: isDead ? 'grayscale(100%) contrast(0.5) brightness(0.3)' : 'grayscale(100%) contrast(1.2)',
+                  mixBlendMode: 'screen'
+                }}
+                src={videoPath}
+                autoPlay
+                loop={!transition && !isDead}
+                muted
+                playsInline
+              />
 
-                {/* Grainy overlay effect */}
-                <div
-                  className="absolute inset-0 opacity-30 pointer-events-none mix-blend-overlay"
-                  style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E")`,
-                    backgroundSize: 'cover'
-                  }}
-                />
-
-                {/* Video Title Overlay */}
-                {debugMode && DEBUG_CONFIG.SHOW_STATES && <div className="absolute top-4 left-4 z-10 bg-black bg-opacity-80 px-3 py-2 rounded">
-                  <h2 className="text-sm font-bold tracking-wider">{section.title}</h2>
-                  <p className="text-xs text-gray-400 mt-0.5">{section.subtitle}</p>
-                  {/* State indicator */}
-                  <div className="mt-2 flex gap-2 items-center">
-                    <span className={`text-xs px-2 py-0.5 rounded ${currentState === STATES.DEAD ? 'bg-gray-700 text-gray-400' :
-                      currentState === STATES.EXCITED ? 'bg-red-600 text-white' :
-                        'bg-blue-600 text-white'
-                      }`}>
+              {/* Data overlay for each shape */}
+              <div style={{
+                position: 'absolute',
+                ...config.dataPosition,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: '20px',
+                borderRadius: '8px',
+                maxWidth: '300px',
+                zIndex: 10,
+                color: 'white',
+                fontFamily: 'monospace',
+                fontSize: '12px'
+              }}>
+                {debugMode && (
+                  <div style={{ marginBottom: '10px' }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{section.title}</div>
+                    <div style={{ fontSize: '10px', color: '#999' }}>{section.subtitle}</div>
+                    <div style={{
+                      marginTop: '5px',
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      display: 'inline-block',
+                      backgroundColor: currentState === STATES.DEAD ? '#666' :
+                        currentState === STATES.EXCITED ? '#dc2626' : '#2563eb',
+                      fontSize: '10px'
+                    }}>
                       {transition ? '→ TRANSITION' : currentState}
-                    </span>
+                    </div>
                   </div>
-                </div>}
+                )}
 
-                {/* Video placeholder if file not found */}
-                <div className="absolute inset-0 flex items-center justify-center text-gray-700 text-xs pointer-events-none">
-                  <div className="text-center">
-                    <div className="font-mono">{debugMode && DEBUG_CONFIG.SHOW_VIDEO_PATHS && videoPath}</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Data Display Section */}
-              <div className="flex-1 bg-black border-l border-gray-800 p-3 overflow-hidden">
-                <div className="space-y-1.5">
+                {/* Data points */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {section.dataPoints.map((dataPoint, dpIndex) => {
                     const key = `${section.id}-${dataPoint}`;
                     const value = dataValues[key] || '0.0';
@@ -742,29 +812,36 @@ const VideoInstallation = () => {
                     const targetValue = targetValuesRef.current[key];
 
                     return (
-                      <div key={dpIndex} className="flex items-center justify-between text-xs">
-                        <span className="text-gray-400 uppercase tracking-wide text-[10px] flex-1 pr-2">
+                      <div key={dpIndex} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ fontSize: '9px', color: '#999', textTransform: 'uppercase' }}>
                           {dataPoint}
                           {debugMode && DEBUG_CONFIG.SHOW_LERP_RATES && lerpRate && (
-                            <span className="text-[8px] text-gray-600 ml-1">
+                            <span style={{ color: '#666', marginLeft: '4px' }}>
                               ({lerpRate.toFixed(2)})
                             </span>
                           )}
-                        </span>
-                        <div className="flex items-center gap-2 flex-1">
-                          <div className="flex-1 h-1 bg-gray-800 relative overflow-hidden">
-                            <div
-                              className={`h-full transition-all duration-300 ${isDead ? 'bg-gray-600' :
-                                isExcited ? 'bg-red-500' : 'bg-white'
-                                }`}
-                              style={{ width: `${width}%` }}
-                            />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{
+                            flex: 1,
+                            height: '4px',
+                            backgroundColor: '#333',
+                            borderRadius: '2px',
+                            overflow: 'hidden'
+                          }}>
+                            <div style={{
+                              height: '100%',
+                              width: `${width}%`,
+                              backgroundColor: isDead ? '#666' : '#fff',
+                              transition: 'width 0.3s'
+                            }} />
                           </div>
-                          <span className={`font-mono w-12 text-right text-[11px] ${isDead ? 'text-gray-600' : 'text-white'
-                            }`}>
+                          <span style={{ fontSize: '10px', minWidth: '40px', textAlign: 'right' }}>
                             {value}
                             {debugMode && DEBUG_CONFIG.SHOW_LERP_RATES && targetValue !== undefined && (
-                              <span className="text-[8px] text-yellow-500">→{targetValue.toFixed(0)}</span>
+                              <span style={{ color: '#eab308', fontSize: '8px' }}>
+                                →{targetValue.toFixed(0)}
+                              </span>
                             )}
                           </span>
                         </div>
