@@ -373,6 +373,27 @@ const VideoInstallation = () => {
   const frameTimesRef = useRef([]);
   const lastFrameTimeRef = useRef(performance.now());
 
+  // Responsive scaling
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const calculateScale = () => {
+      const containerWidth = 2112;
+      const containerHeight = 3648;
+
+      const scaleX = window.innerWidth / containerWidth;
+      const scaleY = window.innerHeight / containerHeight;
+
+      // Use the smaller scale to ensure everything fits
+      const newScale = Math.min(scaleX, scaleY);
+      setScale(newScale);
+    };
+
+    calculateScale();
+    window.addEventListener('resize', calculateScale);
+    return () => window.removeEventListener('resize', calculateScale);
+  }, []);
+
   // Initialize FSM instance
   const fsmRef = useRef(null);
   if (!fsmRef.current) {
@@ -741,7 +762,7 @@ const VideoInstallation = () => {
         width: '2112px',
         height: '3648px',
         position: 'relative',
-        transform: 'scale(0.5)',
+        transform: `scale(${scale})`,
         transformOrigin: 'top left'
       }}>
         {shapeConfigs.map((config, index) => {
