@@ -1,6 +1,18 @@
 # Video Installation App
 
-Interactive video installation displaying 5 levels of biological systems with live data visualization.
+Interactive video installation displaying 5 levels of biological systems with autonomous state transitions and live data visualization.
+
+## 🎨 Concept
+
+This installation visualizes biological systems across five scales, each operating as an autonomous entity that responds to its own data thresholds and influences other levels through data coupling:
+
+- **Predator** - Bird of prey (activates when Hunger > 80)
+- **Flock** - Collective bird behavior (activates when Cohesion < 50 AND Variance > 50)
+- **Individual** - Single bird (activates when Fear > 40)
+- **Muscle** - Tissue contraction (activates when Electrical Activity > 60)
+- **Microscopic** - Molecular/cellular processes (activates when ATP > 70)
+
+Each level autonomously monitors its data and transitions between states (NORMAL → EXCITED → DEAD), creating an emergent ecosystem where biological scales influence each other.
 
 ## 🚀 Quick Start (For Artists - No Coding Required!)
 
@@ -24,15 +36,35 @@ Interactive video installation displaying 5 levels of biological systems with li
    - Wait for it to finish (this might take a few minutes)
 
 3. **Add Your Videos**
-   - Place your 5 video files in the `src/videos/` folder
-   - Name them exactly as follows:
-     - `predator.mp4` - Bird of prey footage
-     - `flock.mp4` - Flock of birds footage
-     - `individual.mp4` - Single bird footage
-     - `muscle.mp4` - Muscle contraction footage
-     - `molecular.mp4` - Molecular/microscopic footage
-   
-   ⚠️ **Important**: Videos must be `.mp4` format and should be optimized for performance!
+   - Create folder structure in `src/videos/`:
+     ```
+     src/videos/
+     ├── predator/
+     │   ├── normal.mp4
+     │   ├── excited.mp4
+     │   └── dead.mp4
+     ├── flock/
+     │   ├── normal.mp4
+     │   ├── excited.mp4
+     │   └── dead.mp4
+     ├── individual/
+     │   ├── normal.mp4
+     │   ├── excited.mp4
+     │   └── dead.mp4
+     ├── muscle/
+     │   ├── normal.mp4
+     │   ├── excited.mp4
+     │   └── dead.mp4
+     └── microscopic/
+         ├── normal.mp4
+         ├── excited.mp4
+         └── dead.mp4
+     ```
+
+   ⚠️ **Important**:
+   - Videos must be `.mp4` format and optimized for performance
+   - Each level needs 3 videos representing its states
+   - Name files exactly as shown (lowercase)
 
 ### Running the Installation
 
@@ -62,32 +94,165 @@ The built app will be in the `dist/` folder. You can copy this to any computer a
 
 ## 🎮 Controls
 
-- **SPACE BAR** - Activate predator (for testing)
+### Keyboard Shortcuts
+- **SPACE BAR** - Inject data spike (simulates hunger increase for testing autonomous behavior)
+- **D** - Toggle debug mode (shows FPS, states, transition history, lerp rates)
+- **1** - Force predator to EXCITED state (testing only)
+- **2** - Force predator to DEAD state (testing only)
+- **3** - Force predator to NORMAL state (testing only)
 - **ESC** - Exit fullscreen and quit app
-- **Physical Button** - Wire up your hardware button (see Hardware Integration section)
 
-## 🎨 Customization
+### Physical Button Integration
+- Wire up your hardware button to inject data spikes (see Hardware Integration section)
 
-### Adjusting Layout
-Open `src/app.jsx` and modify:
-- `gap-2` and `gap-3` values to change spacing
-- `p-3` values to change padding
-- `text-xl`, `text-xs` to change text sizes
+## 🧬 How the Autonomous System Works
 
-### Changing Colors
-- Border color when predator is active: Look for `border-red-500`
-- Background colors: Look for `bg-black`, `bg-gray-900`, etc.
+### State Machine Architecture
+
+The app uses a **Biological Finite State Machine (BiologicalFSM)** class that manages autonomous behavior:
+
+1. **Autonomous Monitoring**: Each biological level continuously monitors its own data values at 60fps
+2. **Threshold-Based Transitions**: When data crosses defined thresholds, levels autonomously transition states
+3. **Data Coupling**: Excited states influence other levels' data, creating cascading effects
+4. **Smooth Interpolation**: All data values lerp (smoothly transition) to targets at individual rates
+
+### Transition Rules
+
+Each level has specific conditions for activation:
+
+- **Predator**: `Hunger > 80` → EXCITED
+- **Flock**: `Cohesion < 50 AND Variance > 50` → EXCITED
+- **Individual**: `Fear > 40` → EXCITED
+- **Muscle**: `Electrical Activity > 60` → EXCITED
+- **Microscopic**: `ATP > 70` → EXCITED
+
+### Data Coupling Examples
+
+When a level enters EXCITED state, it influences other levels:
+
+- **Predator EXCITED** → Increases Flock's "Collective Energy" (+15)
+- **Flock EXCITED** → Increases Individual's "Social Pressure" (+20)
+- **Individual EXCITED** → Increases Muscle's "Neural Input" (+25)
+- **Muscle EXCITED** → Increases Microscopic's "Metabolic Rate" (+30)
+- **Microscopic EXCITED** → Increases Predator's "Energy Available" (+10)
+
+This creates a circular ecosystem where activity propagates through biological scales.
+
+### Data Lerping (Smooth Transitions)
+
+Each data point has an individual lerp rate (0.02 - 0.3) that controls how quickly it reaches target values:
+- **Slow lerp** (0.02-0.05): Creates gradual, organic changes
+- **Fast lerp** (0.2-0.3): Creates immediate, reactive changes
+- Rates are randomized on startup for natural variation
+- Target values update every 800ms with random fluctuations
+
+## 🎨 Visual Design
+
+### Organic Layout
+
+The installation uses **SVG clip-paths** to create organic, flowing shapes instead of a rigid grid:
+
+- Base container: 2112 × 3648 pixels (aspect ratio preserved)
+- Responsive scaling maintains aspect ratio across all viewport sizes
+- Five unique organic shapes positioned absolutely
+- Videos masked by SVG paths for artistic presentation
+
+### Visual Effects
+
+- **Grayscale filter** with contrast adjustment
+- **State-based borders**:
+  - NORMAL: No border
+  - EXCITED: Red border (4px)
+  - DEAD: Gray border (4px)
+- **Data overlays** positioned within each shape
+- **Debug panel** in top-right (toggle with D key)
+
+## 🔧 Customization
+
+### Adjusting Transition Thresholds
+
+Open `src/app.jsx` and find `TRANSITION_RULES` (around line 212):
+
+```javascript
+const TRANSITION_RULES = {
+  predator: {
+    shouldActivate: (dataValues, levelId) => {
+      const hunger = parseFloat(dataValues[`${levelId}-Hunger`]) || 0;
+      return hunger > 80;  // Change this threshold
+    }
+  },
+  // ... modify other levels
+};
+```
+
+### Modifying Data Coupling
+
+Find `COUPLING_RULES` (around line 270):
+
+```javascript
+const COUPLING_RULES = {
+  predator: [
+    {
+      targetLevel: 'flock',
+      targetDataPoint: 'Collective Energy',
+      influence: 15,  // Change influence amount
+      mode: 'add',    // or 'multiply'
+      condition: (sourceState) => sourceState === STATES.EXCITED
+    }
+  ],
+  // ... add more coupling rules
+};
+```
+
+### Adjusting Lerp Rates
+
+In `src/app.jsx`, find the lerp initialization (around line 480):
+
+```javascript
+const randomRate = 0.02 + Math.random() * 0.28;  // Range: 0.02 to 0.3
+```
+
+Change the range for different transition speeds:
+- Slower: `0.01 + Math.random() * 0.04` (very gradual)
+- Faster: `0.1 + Math.random() * 0.4` (very reactive)
+
+### Changing Layout
+
+Shape positions are defined in `shapeConfigs` (around line 691):
+
+```javascript
+const shapeConfigs = [
+  {
+    id: 'predator',
+    clipPath: 'clip-shape1',
+    style: {
+      left: '66.511px',
+      top: '75.203px',
+      width: '1198.350px',
+      height: '1538.933px'
+    },
+    dataPosition: { right: '20px', top: '100px' }
+  },
+  // ... modify positions/sizes
+];
+```
 
 ### Video Effects
-In the `<video>` element, adjust:
-- `filter: 'grayscale(100%) contrast(1.2)'` - Change contrast value
-- Remove grayscale if you want color videos
+
+In the video render function, adjust filters:
+
+```javascript
+style={{
+  filter: 'grayscale(100%) contrast(1.2)',  // Modify contrast
+  // Remove grayscale(100%) for color videos
+}}
+```
 
 ## 🔧 Hardware Integration
 
 ### Connecting a Physical Button
 
-The app is set up to accept input from:
+The app accepts input from:
 1. **Keyboard** (SPACE) - for testing
 2. **Arduino/Raspberry Pi** - via serial communication
 3. **GPIO pins** - direct hardware integration
@@ -95,7 +260,7 @@ The app is set up to accept input from:
 
 #### Arduino Example:
 ```cpp
-// Arduino code to send button press
+// Arduino code to send data spike signal
 void setup() {
   Serial.begin(9600);
   pinMode(2, INPUT_PULLUP); // Button on pin 2
@@ -103,19 +268,45 @@ void setup() {
 
 void loop() {
   if (digitalRead(2) == LOW) {
-    Serial.println("ACTIVATE");
+    Serial.println("SPIKE");  // Triggers hunger increase
     delay(500); // Debounce
   }
 }
 ```
 
-To integrate with Electron, modify `main.js` to listen to serial port.
+To integrate with Electron, modify `main.js` to listen to serial port and send IPC message to renderer.
 
 ### Using a Mouse Click (Disguised Button)
 If your "button" is actually a mouse click on a hidden sensor:
 - The app already responds to clicks
 - You can wire a physical button to simulate mouse clicks
 - Or use touch-sensitive surfaces with USB touch controllers
+
+## 🐛 Debug Mode
+
+Press **D** to toggle debug mode, which displays:
+
+### FPS Counter
+- **Green** (55-60 fps): Excellent performance
+- **Yellow** (45-54 fps): Good performance
+- **Orange** (30-44 fps): Degraded performance
+- **Red** (<30 fps): Poor performance
+
+### State Display
+Shows current state of each biological level:
+- NORMAL (white)
+- EXCITED (red)
+- DEAD (gray)
+
+### Transition History
+Logs the last 10 state transitions with timestamps:
+```
+[12:34:56] predator: NORMAL → EXCITED (Hunger: 85.2)
+[12:34:58] flock: NORMAL → EXCITED (Cohesion: 42.1, Variance: 67.8)
+```
+
+### Lerp Rates
+Shows individual interpolation rate for each data point next to its value.
 
 ## 📁 File Structure
 
@@ -124,71 +315,172 @@ video-installation-app/
 ├── main.js              # Electron main process
 ├── package.json         # App configuration
 ├── src/
-│   ├── index.html      # Main HTML file
-│   ├── app.jsx         # React app (your installation)
-│   └── videos/         # Place your video files here!
-│       ├── predator.mp4
-│       ├── flock.mp4
-│       ├── individual.mp4
-│       ├── muscle.mp4
-│       └── molecular.mp4
+│   ├── index.html      # Main HTML entry point
+│   ├── app.jsx         # Complete React app with BiologicalFSM
+│   └── videos/         # Video files organized by level/state
+│       ├── predator/
+│       │   ├── normal.mp4
+│       │   ├── excited.mp4
+│       │   └── dead.mp4
+│       ├── flock/
+│       │   ├── normal.mp4
+│       │   ├── excited.mp4
+│       │   └── dead.mp4
+│       ├── individual/
+│       │   ├── normal.mp4
+│       │   ├── excited.mp4
+│       │   └── dead.mp4
+│       ├── muscle/
+│       │   ├── normal.mp4
+│       │   ├── excited.mp4
+│       │   └── dead.mp4
+│       └── microscopic/
+│           ├── normal.mp4
+│           ├── excited.mp4
+│           └── dead.mp4
 └── README.md           # This file
 ```
 
 ## 🎯 For Installation Day
 
 1. **Pre-show**:
-   - Test all videos are loading
-   - Test the physical button
+   - Test all videos are loading for each state
+   - Test autonomous transitions (watch hunger climb, see predator activate)
+   - Test data coupling (watch how one level influences others)
+   - Test the physical button (injects hunger spike)
    - Set the computer to never sleep
    - Hide the mouse cursor (already done in code)
    - Close all other applications
+   - Turn off debug mode (press D if visible)
 
 2. **During show**:
    - Run the built standalone app (not `npm start`)
    - The app runs fullscreen automatically
+   - System operates autonomously - no intervention needed
    - Press ESC to exit if needed
 
 3. **Loop/Restart**:
    - The app runs continuously
-   - Videos loop automatically
+   - Videos loop automatically within each state
+   - States transition based on data thresholds
    - If you need to restart, just close and reopen
 
 ## 🐛 Troubleshooting
 
 **Videos not showing?**
-- Check that video files are in `src/videos/` folder
+- Check that video files are in correct folder structure (`src/videos/[level]/[state].mp4`)
 - Make sure they're named exactly right (lowercase, .mp4)
 - Try converting to H.264 codec if videos won't play
+- Check browser console for loading errors (press D, then F12)
 
 **App won't start?**
 - Make sure you ran `npm install` first
 - Try deleting `node_modules/` and running `npm install` again
+- Check that all video folders exist
 
 **Performance issues?**
 - Compress your videos (aim for 1920x1080 or less)
 - Close other applications
 - Use a dedicated computer for the installation
+- Check FPS in debug mode (press D)
+
+**States not transitioning?**
+- Enable debug mode (press D) to see current data values
+- Check transition history to see if thresholds are being met
+- Verify data values are reaching threshold levels
+- Press SPACE to inject hunger spike and test system
+
+**Layout looks wrong?**
+- App uses responsive scaling to maintain 2112:3648 aspect ratio
+- Resize window to see scaling adjust
+- Check that SVG clip-paths are loading (view source)
 
 **Fullscreen issues?**
 - App auto-opens in fullscreen
 - If it doesn't, edit `main.js` and check `fullscreen: true`
 
-## 📝 Notes
+## 📝 Technical Notes
 
-- The data values currently update randomly to simulate the system
-- To connect to real biological data, you'll need to modify the `useEffect` hook in `app.jsx`
-- The grainy visual effect is applied as a CSS filter overlay
-- All styling uses Tailwind CSS classes for easy customization
+### Data Generation
+- Data values update via smooth interpolation (lerp) at 60fps
+- Target values regenerate every 800ms with random fluctuations
+- Each data point has individual lerp rate (0.02 - 0.3)
+- Coupling rules apply when evaluating transitions (every 30 frames)
 
-## 💡 Tips for Your Artist Friend
+### FSM Evaluation
+- Transition rules checked every 30 frames (~2x per second at 60fps)
+- Prevents excessive state flickering
+- Allows data to stabilize before re-evaluation
 
-- The app is designed to "just work" once videos are added
+### Video Playback
+- Videos preload and loop seamlessly within each state
+- State changes trigger immediate video swap
+- Grayscale filter and contrast applied via CSS
+- Organic shapes created with SVG clip-path masks
+
+### Responsive Design
+- Base container: 2112 × 3648 pixels
+- Dynamic scaling: `Math.min(scaleX, scaleY)` to fit viewport
+- Maintains aspect ratio across all screen sizes
+- Resize listener updates scale on window resize
+
+### Event Architecture
+- FSM uses subscriber pattern for state change notifications
+- React state updates trigger re-renders
+- requestAnimationFrame drives 60fps animation loop
+- Keyboard events handled at component level
+
+## 💡 Tips for Artists
+
+- The app is designed to run autonomously once videos are added
 - No coding needed for basic use!
-- For visual tweaks, the README explains what to change
+- For visual tweaks, this README explains what to change
 - The standalone built app can run on any computer without Node.js
 - Perfect for gallery installations - just double-click and go!
+- Use debug mode (D key) during setup to understand system behavior
+- Turn off debug mode before exhibition opens
+- The system creates emergent behavior - each showing will be unique!
+
+## 🔬 Extending the System
+
+### Adding New States
+
+In `src/app.jsx`, modify the `STATES` object:
+
+```javascript
+const STATES = {
+  NORMAL: 'NORMAL',
+  EXCITED: 'EXCITED',
+  DEAD: 'DEAD',
+  HIBERNATING: 'HIBERNATING'  // New state
+};
+```
+
+Add corresponding videos and transition rules.
+
+### Adding New Biological Levels
+
+1. Add new level configuration to `videoSections` array
+2. Add SVG clip-path in the SVG defs section
+3. Add shape config to `shapeConfigs` array
+4. Define transition rules in `TRANSITION_RULES`
+5. Define coupling rules in `COUPLING_RULES`
+6. Create video folder: `src/videos/[new-level]/`
+
+### Connecting Real Biological Data
+
+Replace the random data generation in the lerp animation loop with real data sources:
+
+```javascript
+// Example: Replace random targets with sensor data
+fetch('/api/sensor-data')
+  .then(res => res.json())
+  .then(data => {
+    targetValuesRef.current[`predator-Hunger`] = data.hungerLevel;
+    // ... map other sensor values
+  });
+```
 
 ---
 
-**Need help?** Look for comments in the code files - they explain what each part does!
+**Need help?** Look for comments in `src/app.jsx` - they explain what each part does!
