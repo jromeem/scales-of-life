@@ -863,7 +863,7 @@ const VideoInstallation = () => {
                               transition: 'width 0.3s'
                             }} />
                           </div>
-                          <span style={{ fontSize: '10px', minWidth: '40px', textAlign: 'right' }}>
+                          <span style={{ fontSize: '100px', minWidth: '40px', textAlign: 'right' }}>
                             {value}
                             {debugMode && DEBUG_CONFIG.SHOW_LERP_RATES && targetValue !== undefined && (
                               <span style={{ color: '#eab308', fontSize: '8px' }}>
