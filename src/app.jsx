@@ -885,7 +885,7 @@ const VideoInstallation = () => {
       {/* Predator Status Indicator */}
       {predatorActive && (
         <div className="fixed top-8 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-8 py-3 text-xl font-bold tracking-widest animate-pulse z-50">
-          PREDATOR ACTIVE
+          PREDATsdfsdfOR ACTIVE
         </div>
       )}
 

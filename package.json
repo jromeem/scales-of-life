@@ -4,6 +4,7 @@
   "description": "Interactive Video Installation - 5-Level Biological System",
   "main": "main.js",
   "scripts": {
+    "dev": "cross-env NODE_ENV=development electron .",
     "start": "electron .",
     "build:mac": "electron-builder --mac",
     "build:win": "electron-builder --win",
@@ -15,15 +16,24 @@
     "mac": {
       "category": "public.app-category.entertainment",
       "icon": "build/icon.icns",
-      "target": ["dmg", "zip"]
+      "target": [
+        "dmg",
+        "zip"
+      ]
     },
     "win": {
       "icon": "build/icon.ico",
-      "target": ["nsis", "portable"]
+      "target": [
+        "nsis",
+        "portable"
+      ]
     },
     "linux": {
       "icon": "build/icon.png",
-      "target": ["AppImage", "deb"]
+      "target": [
+        "AppImage",
+        "deb"
+      ]
     },
     "files": [
       "main.js",
@@ -31,11 +41,18 @@
       "package.json"
     ]
   },
-  "keywords": ["art", "installation", "electron", "video"],
+  "keywords": [
+    "art",
+    "installation",
+    "electron",
+    "video"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "electron": "^28.0.0",
-    "electron-builder": "^24.9.1"
+    "electron-builder": "^24.9.1",
+    "electron-reload": "^2.0.0-alpha.1"
   }
 }

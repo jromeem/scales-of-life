@@ -1,6 +1,14 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
+// Enable hot reloading in development mode
+if (process.env.NODE_ENV === 'development') {
+  require('electron-reload')(__dirname, {
+    electron: path.join(__dirname, 'node_modules', '.bin', 'electron'),
+    hardResetMethod: 'exit'
+  });
+}
+
 let mainWindow;
 
 function createWindow() {
@@ -17,8 +25,10 @@ function createWindow() {
 
   mainWindow.loadFile('src/index.html');
 
-  // Open DevTools in development (comment out for production)
-  // mainWindow.webContents.openDevTools();
+  // Open DevTools in development mode
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.webContents.openDevTools();
+  }
 
   // Press ESC to quit (useful for installations)
   mainWindow.webContents.on('before-input-event', (event, input) => {

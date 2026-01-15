@@ -68,12 +68,21 @@ Each level autonomously monitors its data and transitions between states (NORMAL
 
 ### Running the Installation
 
-**Option 1: Quick Test Run**
+**Option 1: Development Mode** (Recommended for development)
+```bash
+npm run dev
+```
+This enables:
+- Hot reloading (auto-refresh on file changes)
+- DevTools automatically open
+- Best for iterating on the installation
+
+**Option 2: Quick Test Run**
 ```bash
 npm start
 ```
 
-**Option 2: Build a Standalone App** (Recommended for installations)
+**Option 3: Build a Standalone App** (Recommended for installations)
 
 For Mac:
 ```bash
