@@ -773,13 +773,19 @@ const VideoInstallation = () => {
           const isDead = currentState === STATES.DEAD;
 
           return (
-            <div key={section.id}>
+            <div key={section.id} style={{
+              position: 'absolute',
+              ...config.style
+            }}>
               {/* Video with organic clip-path */}
               <video
                 key={videoPath}
                 style={{
                   position: 'absolute',
-                  ...config.style,
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
                   objectFit: 'cover',
                   clipPath: `url(#${config.clipPath})`,
                   filter: isDead ? 'grayscale(100%) contrast(0.5) brightness(0.3)' : 'grayscale(100%) contrast(1.2)',
