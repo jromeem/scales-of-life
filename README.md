@@ -350,29 +350,78 @@ video-installation-app/
 └── README.md           # This file
 ```
 
-## 🎯 For Installation Day
+## 🎯 For Installation Day (Mac mini 2018 Setup)
 
-1. **Pre-show**:
+### Recommended Hardware
+The app is optimized for:
+- **Mac mini 2018** (Intel Core i3-8100B, Intel UHD Graphics 630, 8GB RAM)
+- macOS Sonoma 14.5 or later
+- Dedicated display for installation
+
+### Installation Setup
+
+1. **Build the DMG**:
+   ```bash
+   npm run build:mac
+   ```
+   This creates an optimized `.dmg` file in the `dist/` folder specifically for Intel Mac mini.
+
+2. **Transfer to Mac mini**:
+   - Copy the `.dmg` file to the Mac mini
+   - Double-click to mount
+   - Drag "Video Installation" to Applications folder
+   - Eject the DMG
+
+3. **Mac mini System Settings**:
+   - **Energy Saver**: Set display sleep to "Never"
+   - **Screen Saver**: Disable screen saver
+   - **System Updates**: Disable automatic updates during exhibition
+   - **Do Not Disturb**: Enable to prevent notifications
+   - **Login Items**: Add the app to auto-start on login (optional)
+
+### Pre-Show Checklist
+
+1. **Test the Installation**:
+   - Launch "Video Installation" from Applications
    - Test all videos are loading for each state
    - Test autonomous transitions (watch hunger climb, see predator activate)
    - Test data coupling (watch how one level influences others)
    - Test the physical button (injects hunger spike)
-   - Set the computer to never sleep
-   - Hide the mouse cursor (already done in code)
-   - Close all other applications
    - Turn off debug mode (press D if visible)
 
-2. **During show**:
-   - Run the built standalone app (not `npm start`)
-   - The app runs fullscreen automatically
+2. **Performance Monitoring**:
+   - Enable debug mode (D key) to check FPS
+   - Should maintain 55-60 FPS (green) on Mac mini
+   - If FPS drops below 45, check video file sizes
+
+3. **System Optimization**:
+   - Close all other applications
+   - Disconnect from internet if not needed
+   - Disable Bluetooth if not used
+   - Hide the Dock (already done in code)
+   - Hide the mouse cursor (already done in code)
+
+### During Show
+
+1. **Running the Installation**:
+   - Launch the built app from Applications
+   - App automatically prevents display sleep
    - System operates autonomously - no intervention needed
    - Press ESC to exit if needed
 
-3. **Loop/Restart**:
-   - The app runs continuously
-   - Videos loop automatically within each state
-   - States transition based on data thresholds
-   - If you need to restart, just close and reopen
+2. **Performance Notes**:
+   - The app is optimized for Mac mini's Intel UHD 630 graphics
+   - Hardware acceleration enabled for smooth video playback
+   - Sleep prevention built-in (no manual energy settings needed)
+   - Background throttling disabled for consistent performance
+
+### Loop/Restart
+
+- The app runs continuously indefinitely
+- Videos loop automatically within each state
+- States transition based on data thresholds
+- If you need to restart, just close and reopen
+- Power loss recovery: Add to Login Items for auto-start
 
 ## 🐛 Troubleshooting
 
