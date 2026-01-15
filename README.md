@@ -84,9 +84,14 @@ npm start
 
 **Option 3: Build a Standalone App** (Recommended for installations)
 
-For Mac:
+For Mac (Universal - Intel & Apple Silicon):
 ```bash
 npm run build:mac
+```
+
+For Mac mini 2018 (Intel x64 only - optimized):
+```bash
+npm run build:mac-mini
 ```
 
 For Windows:
@@ -362,9 +367,9 @@ The app is optimized for:
 
 1. **Build the DMG**:
    ```bash
-   npm run build:mac
+   npm run build:mac-mini
    ```
-   This creates an optimized `.dmg` file in the `dist/` folder specifically for Intel Mac mini.
+   This creates an optimized `.dmg` file in the `dist/` folder specifically for Intel Mac mini (x64 only, smaller file size).
 
 2. **Transfer to Mac mini**:
    - Copy the `.dmg` file to the Mac mini
