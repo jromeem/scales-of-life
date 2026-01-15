@@ -939,10 +939,12 @@ const VideoInstallation = () => {
       )}
 
       {/* Instructions */}
-      <div className="fixed bottom-4 left-4 text-gray-700 text-xs space-y-1">
-        <div>Press SPACE to activate predator | D for debug | ESC to exit</div>
-        <div>Press 1: Reset to NORMAL | 2: All EXCITED | 3: Kill individual</div>
-      </div>
+      {debugMode && (
+        <div className="fixed bottom-4 left-4 text-gray-700 text-xs space-y-1">
+          <div>Press SPACE to activate predator | D for debug | ESC to exit</div>
+          <div>Press 1: Reset to NORMAL | 2: All EXCITED | 3: Kill individual</div>
+        </div>
+      )}
     </div>
   );
 };
