@@ -209,19 +209,19 @@ const shapeConfigs = [
   {
     id: 'flock',
     clipPath: 'clip-shape2',
-    style: { left: '66.511px', top: '1615.011px', width: '1099.750px', height: '1684.067px' },
+    style: { left: '1112.338px', top: '75.203px', width: '934.026px', height: '1655.733px' },
     dataPosition: { right: '20px', top: '100px' }
   },
   {
     id: 'individual',
     clipPath: 'clip-shape3',
-    style: { left: '1166.261px', top: '1153.950px', width: '879.219px', height: '823.300px' },
+    style: { left: '66.511px', top: '1539.549px', width: '1783.151px', height: '850.347px' },
     dataPosition: { right: '20px', top: '100px' }
   },
   {
     id: 'muscle',
     clipPath: 'clip-shape4',
-    style: { left: '1264.769px', top: '75.203px', width: '780.711px', height: '1076.872px' },
+    style: { left: '66.511px', top: '2335.882px', width: '1381.924px', height: '1236.027px' },
     dataPosition: { right: '20px', top: '100px' }
   },
   {
@@ -393,6 +393,25 @@ const App = () => {
   }, []);
 
   // ============================================================================
+  // VIDEO PLAYBACK MANAGEMENT
+  // ============================================================================
+
+  useEffect(() => {
+    // Manage video play/pause when states change for seamless transitions
+    const videoElements = document.querySelectorAll('video');
+    videoElements.forEach(video => {
+      const opacity = parseFloat(window.getComputedStyle(video).opacity);
+      if (opacity > 0) {
+        // Visible video should be playing
+        video.play().catch(err => console.warn('Video play failed:', err));
+      } else {
+        // Hidden videos should be paused to save resources
+        video.pause();
+      }
+    });
+  }, [levelStates]);
+
+  // ============================================================================
   // KEYBOARD SHORTCUTS
   // ============================================================================
 
@@ -480,9 +499,8 @@ const App = () => {
       }}>
         {shapeConfigs.map((config) => {
           const section = videoSections.find(s => s.id === config.id);
-          const currentState = levelStates[section.id];
+          const currentState = levelStates[section.id] || STATES.NORMAL;
           const transition = transitioningLevels[section.id];
-          const videoPath = getVideoPath(section.id, currentState, transition);
           const isDead = currentState === STATES.DEAD;
 
           return (
@@ -490,26 +508,38 @@ const App = () => {
               position: 'absolute',
               ...config.style
             }}>
-              {/* Video with organic clip-path */}
-              <video
-                key={videoPath}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  clipPath: `url(#${config.clipPath})`,
-                  filter: isDead ? 'grayscale(100%) contrast(0.5) brightness(0.3)' : 'grayscale(100%) contrast(1.2)',
-                  mixBlendMode: 'screen'
-                }}
-                src={videoPath}
-                autoPlay
-                loop={!transition && !isDead}
-                muted
-                playsInline
-              />
+              {/* Preload all 3 videos per level, toggle visibility for seamless transitions */}
+              {Object.values(STATES).map(state => {
+                const videoPath = getVideoPath(section.id, state, false);
+                const isVisible = state === currentState;
+                const shouldLoop = !transition && state !== STATES.DEAD;
+
+                return (
+                  <video
+                    key={`${section.id}-${state}`}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      clipPath: `url(#${config.clipPath})`,
+                      filter: state === STATES.DEAD ? 'grayscale(100%) contrast(0.5) brightness(0.3)' : 'grayscale(100%) contrast(1.2)',
+                      mixBlendMode: 'screen',
+                      opacity: isVisible ? 1 : 0,
+                      transition: 'opacity 0.3s ease-in-out',
+                      pointerEvents: isVisible ? 'auto' : 'none'
+                    }}
+                    src={videoPath}
+                    autoPlay={isVisible}
+                    loop={shouldLoop}
+                    muted
+                    playsInline
+                    preload="auto"
+                  />
+                );
+              })}
 
               {/* Data overlay for each shape */}
               <div style={{
