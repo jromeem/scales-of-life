@@ -266,7 +266,7 @@ const App = () => {
 
   // Get video path based on state
   const getVideoPath = (levelId, state, isTransitioning) => {
-    const stateFile = state.toLowerCase();
+    const stateFile = (state || STATES.NORMAL).toLowerCase();
     return `videos/${levelId}/${stateFile}.mp4`;
   };
 
