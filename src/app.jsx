@@ -1,7 +1,10 @@
 const { useState, useEffect, useRef } = React;
 
-// Import TWEAKS configuration (loaded from tweaks.jsx)
-// If TWEAKS is not defined, use default values
+// ============================================================================
+// TWEAKS CONFIGURATION
+// ============================================================================
+
+// Import TWEAKS from tweaks.jsx (loaded first in index.html)
 const tweaks = typeof TWEAKS !== 'undefined' ? TWEAKS : {
   fonts: {
     dataPointLabel: '9px',
@@ -44,213 +47,8 @@ const tweaks = typeof TWEAKS !== 'undefined' ? TWEAKS : {
 };
 
 // ============================================================================
-// BiologicalFSM - Finite State Machine for autonomous biological transitions
+// FINITE STATE MACHINE
 // ============================================================================
-
-// Each level monitors its own data and transitions based on internal thresholds
-
-class BiologicalFSM {
-  constructor(config = {}) {
-    this.states = config.states || {
-      NORMAL: 'NORMAL',
-      EXCITED: 'EXCITED',
-      DEAD: 'DEAD'
-    };
-
-    this.transitions = config.transitions || {
-      NORMAL_TO_EXCITED: 'NORMAL_TO_EXCITED',
-      EXCITED_TO_NORMAL: 'EXCITED_TO_NORMAL',
-      EXCITED_TO_DEAD: 'EXCITED_TO_DEAD',
-      NORMAL_TO_DEAD: 'NORMAL_TO_DEAD'
-    };
-
-    // Current state for each level
-    this.levelStates = {};
-
-    // Transition rules: conditions for NORMAL → EXCITED
-    this.transitionRules = config.transitionRules || {};
-
-    // Data coupling: how levels influence each other's data
-    this.couplingRules = config.couplingRules || {};
-
-    // Valid state transitions graph
-    this.validTransitions = {
-      [this.states.NORMAL]: [this.states.EXCITED, this.states.DEAD],
-      [this.states.EXCITED]: [this.states.NORMAL, this.states.DEAD],
-      [this.states.DEAD]: [] // Terminal state
-    };
-
-    // Event subscribers
-    this.subscribers = [];
-
-    // Initialize levels
-    this.levels = config.levels || [];
-    this.levels.forEach(level => {
-      this.levelStates[level] = this.states.NORMAL;
-    });
-  }
-
-  // Get current state for a level
-  getState(levelId) {
-    return this.levelStates[levelId];
-  }
-
-  // Get all states
-  getAllStates() {
-    return { ...this.levelStates };
-  }
-
-  // Check if a transition is valid
-  canTransition(levelId, fromState, toState) {
-    if (fromState === this.states.DEAD) return false; // Dead is terminal
-    return this.validTransitions[fromState]?.includes(toState) || false;
-  }
-
-  // Perform a state transition
-  transition(levelId, toState, options = {}) {
-    const fromState = this.levelStates[levelId];
-
-    if (!this.canTransition(levelId, fromState, toState)) {
-      console.warn(`Invalid transition: ${levelId} ${fromState} → ${toState}`);
-      return null;
-    }
-
-    // Determine transition type
-    let transitionType = null;
-    if (fromState === this.states.NORMAL && toState === this.states.EXCITED) {
-      transitionType = this.transitions.NORMAL_TO_EXCITED;
-    } else if (fromState === this.states.EXCITED && toState === this.states.NORMAL) {
-      transitionType = this.transitions.EXCITED_TO_NORMAL;
-    } else if (fromState === this.states.EXCITED && toState === this.states.DEAD) {
-      transitionType = this.transitions.EXCITED_TO_DEAD;
-    } else if (fromState === this.states.NORMAL && toState === this.states.DEAD) {
-      transitionType = this.transitions.NORMAL_TO_DEAD;
-    }
-
-    // Update state
-    this.levelStates[levelId] = toState;
-
-    // Create transition event
-    const event = {
-      levelId,
-      fromState,
-      toState,
-      transitionType,
-      timestamp: new Date().toLocaleTimeString(),
-      playTransition: options.playTransition !== false
-    };
-
-    // Notify subscribers
-    this.notifySubscribers('transition', event);
-
-    return event;
-  }
-
-  // Evaluate all levels and auto-transition based on data thresholds
-  evaluateTransitions(dataValues) {
-    const transitions = [];
-
-    this.levels.forEach(levelId => {
-      const currentState = this.levelStates[levelId];
-
-      // Only evaluate if in NORMAL state (autonomous activation)
-      if (currentState === this.states.NORMAL) {
-        const rule = this.transitionRules[levelId];
-
-        if (rule && rule.shouldActivate) {
-          const shouldActivate = rule.shouldActivate(dataValues, levelId);
-
-          if (shouldActivate) {
-            const event = this.transition(levelId, this.states.EXCITED, { playTransition: true });
-            if (event) {
-              transitions.push(event);
-            }
-          }
-        }
-      }
-
-      // TODO: Add logic for EXCITED → NORMAL (recovery)
-      // TODO: Add logic for EXCITED → DEAD (failure conditions)
-    });
-
-    return transitions;
-  }
-
-  // Apply data coupling effects between levels
-  applyDataCoupling(dataValues, levelStates) {
-    const modifiedData = { ...dataValues };
-
-    // Apply coupling rules
-    Object.entries(this.couplingRules).forEach(([sourceLevel, rules]) => {
-      const sourceState = levelStates[sourceLevel];
-
-      rules.forEach(rule => {
-        const { targetLevel, targetDataPoint, influence } = rule;
-
-        // Only apply influence if conditions are met
-        if (rule.condition && !rule.condition(sourceState, levelStates)) {
-          return;
-        }
-
-        const key = `${targetLevel}-${targetDataPoint}`;
-        const currentValue = parseFloat(modifiedData[key]) || 0;
-
-        // Apply influence (additive or multiplicative)
-        if (rule.mode === 'add') {
-          modifiedData[key] = (currentValue + influence).toFixed(1);
-        } else if (rule.mode === 'multiply') {
-          modifiedData[key] = (currentValue * influence).toFixed(1);
-        } else if (rule.mode === 'set') {
-          modifiedData[key] = influence.toFixed(1);
-        }
-      });
-    });
-
-    return modifiedData;
-  }
-
-  // Subscribe to FSM events
-  subscribe(callback) {
-    this.subscribers.push(callback);
-    return () => {
-      this.subscribers = this.subscribers.filter(cb => cb !== callback);
-    };
-  }
-
-  // Notify all subscribers
-  notifySubscribers(eventType, data) {
-    this.subscribers.forEach(callback => {
-      callback(eventType, data);
-    });
-  }
-
-  // Force a state change (for testing/debugging)
-  forceState(levelId, state) {
-    const oldState = this.levelStates[levelId];
-    this.levelStates[levelId] = state;
-
-    this.notifySubscribers('stateChange', {
-      levelId,
-      oldState,
-      newState: state,
-      forced: true
-    });
-  }
-
-  // Reset all levels to NORMAL
-  reset() {
-    this.levels.forEach(level => {
-      this.levelStates[level] = this.states.NORMAL;
-    });
-    this.notifySubscribers('reset', { levels: this.levels });
-  }
-}
-
-
-// ============================================================================
-// FSM Configuration - Transition rules and data coupling
-// ============================================================================
-
 
 const STATES = {
   NORMAL: 'NORMAL',
@@ -258,16 +56,9 @@ const STATES = {
   DEAD: 'DEAD'
 };
 
-const TRANSITIONS = {
-  NORMAL_TO_EXCITED: 'NORMAL_TO_EXCITED',
-  EXCITED_TO_NORMAL: 'EXCITED_TO_NORMAL',
-  EXCITED_TO_DEAD: 'EXCITED_TO_DEAD',
-  NORMAL_TO_DEAD: 'NORMAL_TO_DEAD'
-};
-
 const LEVELS = ['predator', 'flock', 'individual', 'muscle', 'microscopic'];
 
-// Transition rules: Define when each level should activate (NORMAL → EXCITED)
+// Transition rules: when each level should activate (NORMAL → EXCITED)
 const TRANSITION_RULES = {
   predator: {
     shouldActivate: (dataValues, levelId) => {
@@ -302,56 +93,220 @@ const TRANSITION_RULES = {
   }
 };
 
-// Data coupling removed - values now lerp independently
+class BiologicalFSM {
+  constructor(config = {}) {
+    this.states = config.states || STATES;
+    this.levels = config.levels || LEVELS;
+    this.transitionRules = config.transitionRules || TRANSITION_RULES;
+    this.levelStates = {};
 
-// FSM configuration object
-const FSM_CONFIG = {
-  states: STATES,
-  transitions: TRANSITIONS,
-  levels: LEVELS,
-  transitionRules: TRANSITION_RULES,
-  couplingRules: {} // No coupling - independent lerping
-};
+    // Initialize all levels to NORMAL
+    this.levels.forEach(level => {
+      this.levelStates[level] = this.states.NORMAL;
+    });
+  }
 
+  getState(levelId) {
+    return this.levelStates[levelId];
+  }
 
+  getAllStates() {
+    return { ...this.levelStates };
+  }
 
-// Debug configuration
+  setState(levelId, newState) {
+    this.levelStates[levelId] = newState;
+  }
+
+  // Evaluate all levels and transition if thresholds are met
+  evaluateTransitions(dataValues) {
+    this.levels.forEach(levelId => {
+      const currentState = this.levelStates[levelId];
+
+      // Can't transition from DEAD state
+      if (currentState === this.states.DEAD) return;
+
+      const rule = this.transitionRules[levelId];
+      if (!rule) return;
+
+      const shouldActivate = rule.shouldActivate(dataValues, levelId);
+
+      // NORMAL → EXCITED
+      if (currentState === this.states.NORMAL && shouldActivate) {
+        this.setState(levelId, this.states.EXCITED);
+      }
+      // EXCITED → NORMAL (when threshold no longer met)
+      else if (currentState === this.states.EXCITED && !shouldActivate) {
+        this.setState(levelId, this.states.NORMAL);
+      }
+    });
+  }
+
+  // Force state change (for keyboard shortcuts)
+  forceState(levelId, state) {
+    this.levelStates[levelId] = state;
+  }
+}
+
+// ============================================================================
+// DEBUG CONFIGURATION
+// ============================================================================
+
 const DEBUG_CONFIG = {
-  INITIAL_STATE: false,  // Start with debug off
-  SHOW_FPS: true,        // Show FPS counter
-  SHOW_STATES: true,     // Show state badges on videos
-  SHOW_LERP_RATES: true, // Show lerp rates on data points
-  SHOW_VIDEO_PATHS: true,// Show video file paths
-  SHOW_HISTORY: true,    // Show transition history
+  SHOW_FPS: true,
+  SHOW_HISTORY: true,
+  SHOW_LERP_RATES: true
 };
 
-const VideoInstallation = () => {
-  const [predatorActive, setPredatorActive] = useState(false);
-  const [dataValues, setDataValues] = useState({});
-  const [debugMode, setDebugMode] = useState(DEBUG_CONFIG.INITIAL_STATE);
+// ============================================================================
+// VIDEO SECTIONS CONFIGURATION
+// ============================================================================
 
-  // Store target values and lerp rates for smooth transitions
+const videoSections = [
+  {
+    id: 'predator',
+    title: 'Predator',
+    subtitle: 'Bird of Prey',
+    dataPoints: ['Hunger', 'Prey Proximity', 'Energy Available']
+  },
+  {
+    id: 'flock',
+    title: 'Flock',
+    subtitle: 'Collective Behavior',
+    dataPoints: ['Cohesion', 'Variance', 'Collective Energy']
+  },
+  {
+    id: 'individual',
+    title: 'Individual',
+    subtitle: 'Single Bird',
+    dataPoints: ['Fear Level', 'Heart Rate', 'Neighbor Proximity']
+  },
+  {
+    id: 'muscle',
+    title: 'Muscle',
+    subtitle: 'Tissue Contraction',
+    dataPoints: ['Electrical Activation', 'Force Production', 'Lactic Acid', 'Heat']
+  },
+  {
+    id: 'microscopic',
+    title: 'Microscopic',
+    subtitle: 'Molecular Activity',
+    dataPoints: ['ATP Consumption', 'Cross-bridge Attach/Detach', 'Calcium Ions']
+  }
+];
+
+// ============================================================================
+// SHAPE CONFIGURATIONS (SVG clip-paths)
+// ============================================================================
+
+const shapeConfigs = [
+  {
+    id: 'predator',
+    clipPath: 'clip-shape1',
+    style: { left: '66.511px', top: '75.203px', width: '1198.350px', height: '1538.933px' },
+    dataPosition: { right: '20px', top: '100px' }
+  },
+  {
+    id: 'flock',
+    clipPath: 'clip-shape2',
+    style: { left: '66.511px', top: '1615.011px', width: '1099.750px', height: '1684.067px' },
+    dataPosition: { right: '20px', top: '100px' }
+  },
+  {
+    id: 'individual',
+    clipPath: 'clip-shape3',
+    style: { left: '1166.261px', top: '1153.950px', width: '879.219px', height: '823.300px' },
+    dataPosition: { right: '20px', top: '100px' }
+  },
+  {
+    id: 'muscle',
+    clipPath: 'clip-shape4',
+    style: { left: '1264.769px', top: '75.203px', width: '780.711px', height: '1076.872px' },
+    dataPosition: { right: '20px', top: '100px' }
+  },
+  {
+    id: 'microscopic',
+    clipPath: 'clip-shape5',
+    style: { left: '875.418px', top: '1991.949px', width: '1170.946px', height: '1579.947px' },
+    dataPosition: { right: '20px', top: '100px' }
+  }
+];
+
+// ============================================================================
+// MAIN APP COMPONENT
+// ============================================================================
+
+const App = () => {
+  // State management
+  const [dataValues, setDataValues] = useState({});
+  const [levelStates, setLevelStates] = useState({});
+  const [transitioningLevels, setTransitioningLevels] = useState({});
+  const [debugMode, setDebugMode] = useState(false);
+  const [fps, setFps] = useState(60);
+  const [transitionHistory, setTransitionHistory] = useState([]);
+  const [scale, setScale] = useState(1);
+
+  // Refs for lerp system
   const targetValuesRef = useRef({});
   const lerpRatesRef = useRef({});
+  const fsmRef = useRef(null);
 
-  // Debug metrics
-  const [fps, setFps] = useState(0);
-  const [transitionHistory, setTransitionHistory] = useState([]);
-  const frameTimesRef = useRef([]);
-  const lastFrameTimeRef = useRef(performance.now());
+  // Initialize FSM
+  if (!fsmRef.current) {
+    fsmRef.current = new BiologicalFSM({
+      states: STATES,
+      levels: LEVELS,
+      transitionRules: TRANSITION_RULES
+    });
+  }
+  const fsm = fsmRef.current;
 
-  // Responsive scaling
-  const [scale, setScale] = useState(1);
+  // Linear interpolation function
+  const lerp = (start, end, t) => start + (end - start) * t;
+
+  // Get video path based on state
+  const getVideoPath = (levelId, state, isTransitioning) => {
+    const stateFile = state.toLowerCase();
+    return `videos/${levelId}/${stateFile}.mp4`;
+  };
+
+  // ============================================================================
+  // INITIALIZATION
+  // ============================================================================
+
+  useEffect(() => {
+    // Initialize data values and lerp parameters
+    const initialValues = {};
+    const initialTargets = {};
+    const initialRates = {};
+
+    videoSections.forEach(section => {
+      section.dataPoints.forEach(point => {
+        const key = `${section.id}-${point}`;
+        const randomValue = Math.random() * 100;
+        initialValues[key] = randomValue.toFixed(1);
+        initialTargets[key] = randomValue;
+        // Random lerp rate between 0.02 and 0.3
+        initialRates[key] = 0.02 + Math.random() * 0.28;
+      });
+    });
+
+    setDataValues(initialValues);
+    targetValuesRef.current = initialTargets;
+    lerpRatesRef.current = initialRates;
+    setLevelStates(fsm.getAllStates());
+  }, []);
+
+  // ============================================================================
+  // RESPONSIVE SCALING
+  // ============================================================================
 
   useEffect(() => {
     const calculateScale = () => {
       const containerWidth = 2112;
       const containerHeight = 3648;
-
       const scaleX = window.innerWidth / containerWidth;
       const scaleY = window.innerHeight / containerHeight;
-
-      // Use the smaller scale to ensure everything fits
       const newScale = Math.min(scaleX, scaleY);
       setScale(newScale);
     };
@@ -361,202 +316,47 @@ const VideoInstallation = () => {
     return () => window.removeEventListener('resize', calculateScale);
   }, []);
 
-  // Initialize FSM instance
-  const fsmRef = useRef(null);
-  if (!fsmRef.current) {
-    fsmRef.current = new BiologicalFSM(FSM_CONFIG);
-  }
-  const fsm = fsmRef.current;
+  // ============================================================================
+  // TARGET VALUE GENERATION
+  // ============================================================================
 
-  // State machine for each biological level (synced with FSM)
-  const [levelStates, setLevelStates] = useState(fsm.getAllStates());
-
-  // Track if we're playing a transition video
-  const [transitioningLevels, setTransitioningLevels] = useState({
-    predator: null,
-    flock: null,
-    individual: null,
-    muscle: null,
-    microscopic: null
-  });
-
-  // Subscribe to FSM events
   useEffect(() => {
-    const unsubscribe = fsm.subscribe((eventType, data) => {
-      if (eventType === 'transition') {
-        // Update transition history for debug
-        if (debugMode && DEBUG_CONFIG.SHOW_HISTORY) {
-          setTransitionHistory(prev => [
-            data,
-            ...prev.slice(0, 9)
-          ]);
-        }
-
-        // Handle transition video playback
-        if (data.playTransition) {
-          setTransitioningLevels(prev => ({
-            ...prev,
-            [data.levelId]: data.transitionType
-          }));
-
-          // After 3 seconds, clear transition and sync states
-          setTimeout(() => {
-            setTransitioningLevels(prev => ({
-              ...prev,
-              [data.levelId]: null
-            }));
-            setLevelStates(fsm.getAllStates());
-          }, 3000);
-        } else {
-          // Immediate state sync
-          setLevelStates(fsm.getAllStates());
-        }
-      }
-    });
-
-    return unsubscribe;
-  }, [fsm, debugMode]);
-
-  const videoSections = [
-    {
-      id: 'predator',
-      title: 'PREDATOR',
-      subtitle: 'Bird of prey in high-tension waiting',
-      dataPoints: ['Hunger', 'Energy', 'Tilt/Orientation', 'Prey Proximity', 'Sensory Confidence', 'Success Probability']
-    },
-    {
-      id: 'flock',
-      title: 'POPULATION',
-      subtitle: 'Flock moving as one',
-      dataPoints: ['Collective Energy', 'Cohesion', 'Variance', 'Obstacles', 'Signal Propagation Delay']
-    },
-    {
-      id: 'individual',
-      title: 'INDIVIDUAL',
-      subtitle: 'Single bird in flight',
-      dataPoints: ['Experience Level', 'Fear Level', 'Fatigue', 'Calories Expended', 'Neighbor Proximity', 'Reaction Latency', 'Survival Probability']
-    },
-    {
-      id: 'muscle',
-      title: 'ORGAN',
-      subtitle: 'Muscle contracting',
-      dataPoints: ['Force Production', 'Electrical Activation', 'Intracellular Calcium', 'Stiffness', 'Lactic Acid', 'Heat']
-    },
-    {
-      id: 'microscopic',
-      title: 'MICROSCOPIC',
-      subtitle: 'Molecular cross-bridge cycling',
-      dataPoints: ['Cross-bridge Attach/Detach', 'ATP Consumption', 'Binding Probability', 'Molecular Fatigue', 'Thermal Noise']
-    }
-  ];
-
-  // Get video path based on current state using new directory structure
-  const getVideoPath = (levelId, currentState, transition = null) => {
-    // New structure: videos/[level]/[file].mp4
-    if (transition) {
-      // Playing the single transition video
-      return `videos/${levelId}/transition.mp4`;
-    }
-
-    if (currentState === STATES.DEAD) {
-      // For DEAD state, freeze on last frame of excited or show static
-      // Since we don't have a dead.mp4, we'll pause the excited video
-      return `videos/${levelId}/excited.mp4`;
-    }
-
-    // Playing a state video (normal or excited)
-    return `videos/${levelId}/${currentState.toLowerCase()}.mp4`;
-  };
-
-  // Wrapper for FSM transition (for backwards compatibility)
-  const transitionState = (levelId, toState, playTransition = true) => {
-    fsm.transition(levelId, toState, { playTransition });
-  };
-
-  // Get data range multiplier based on state
-  const getDataMultiplier = (levelId, dataPoint) => {
-    const state = levelStates[levelId];
-
-    if (state === STATES.DEAD) {
-      // Dead state: most values near zero, some decay indicators high
-      if (dataPoint.includes('Heat') || dataPoint.includes('Lactic Acid')) {
-        return 0.3; // Residual
-      }
-      return 0.1; // Mostly dead
-    }
-
-    if (state === STATES.EXCITED) {
-      // Excited state: high values, lots of activity
-      if (dataPoint.includes('Fear') || dataPoint.includes('Energy') ||
-        dataPoint.includes('Force') || dataPoint.includes('ATP')) {
-        return 1.5; // Amplified
-      }
-      return 1.2; // Generally higher
-    }
-
-    // Normal state: baseline values
-    return 0.7;
-  };
-
-  // Initialize lerp rates for each data point (only once)
-  useEffect(() => {
-    const rates = {};
-    videoSections.forEach(section => {
-      section.dataPoints.forEach(point => {
-        const key = `${section.id}-${point}`;
-        // Random lerp rate between 0.02 (very slow) and 0.3 (very fast)
-        rates[key] = 0.02 + Math.random() * 0.28;
-      });
-    });
-    lerpRatesRef.current = rates;
-  }, []);
-
-  // Generate new target values periodically
-  useEffect(() => {
-    const targetInterval = setInterval(() => {
-      const newTargets = {};
+    const interval = setInterval(() => {
       videoSections.forEach(section => {
         section.dataPoints.forEach(point => {
           const key = `${section.id}-${point}`;
-          const multiplier = getDataMultiplier(section.id, point);
-          const baseValue = Math.random() * 100;
-          newTargets[key] = baseValue * multiplier;
+          // Generate new random target value
+          targetValuesRef.current[key] = Math.random() * 100;
         });
       });
-      targetValuesRef.current = newTargets;
     }, 800); // Generate new targets every 800ms
 
-    return () => clearInterval(targetInterval);
-  }, [levelStates]);
+    return () => clearInterval(interval);
+  }, []);
 
-  // Smooth lerping animation loop (runs at ~60fps)
+  // ============================================================================
+  // ANIMATION LOOP (60fps)
+  // ============================================================================
+
   useEffect(() => {
     let animationFrameId;
     let evaluationCounter = 0;
-
-    const lerp = (start, end, rate) => {
-      return start + (end - start) * rate;
-    };
+    let lastFrameTime = performance.now();
+    let frameCount = 0;
+    let fpsUpdateTime = performance.now();
 
     const animate = () => {
-      // Calculate FPS for debug
-      if (debugMode && DEBUG_CONFIG.SHOW_FPS) {
-        const now = performance.now();
-        const deltaTime = now - lastFrameTimeRef.current;
-        lastFrameTimeRef.current = now;
+      const currentTime = performance.now();
+      frameCount++;
 
-        frameTimesRef.current.push(deltaTime);
-        if (frameTimesRef.current.length > 60) {
-          frameTimesRef.current.shift();
-        }
-
-        // Update FPS every 30 frames
-        if (frameTimesRef.current.length === 60) {
-          const avgFrameTime = frameTimesRef.current.reduce((a, b) => a + b) / frameTimesRef.current.length;
-          setFps(Math.round(1000 / avgFrameTime));
-        }
+      // Update FPS every second
+      if (currentTime - fpsUpdateTime >= 1000) {
+        setFps(frameCount);
+        frameCount = 0;
+        fpsUpdateTime = currentTime;
       }
 
+      // Update data values with lerping
       setDataValues(prevValues => {
         const newValues = {};
 
@@ -577,111 +377,60 @@ const VideoInstallation = () => {
         evaluationCounter++;
         if (evaluationCounter >= 30) {
           fsm.evaluateTransitions(newValues);
+          setLevelStates(fsm.getAllStates());
           evaluationCounter = 0;
         }
 
         return newValues;
       });
 
+      lastFrameTime = currentTime;
       animationFrameId = requestAnimationFrame(animate);
     };
 
     animationFrameId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, []);
 
-    return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
-    };
-  }, [fsm, debugMode]);
+  // ============================================================================
+  // KEYBOARD SHORTCUTS
+  // ============================================================================
 
-  // Predator activation - inject hunger spike to trigger autonomous cascade
-  const handlePredatorActivation = () => {
-    setPredatorActive(true);
-
-    // Instead of forcing state transitions, spike predator's Hunger data
-    // This will trigger the autonomous FSM evaluation
-    const hungerKey = 'predator-Hunger';
-    targetValuesRef.current[hungerKey] = 95; // Spike above threshold (>80)
-
-    // Visual feedback clears after 2 seconds
-    setTimeout(() => {
-      setPredatorActive(false);
-    }, 2000);
-  };
-
-  // Listen for keyboard shortcuts (for testing different scenarios)
   useEffect(() => {
     const handleKeyPress = (e) => {
-      if (e.code === 'Space') {
-        handlePredatorActivation();
-      }
-
-      // Toggle debug mode with 'D' key
-      if (e.code === 'KeyD') {
+      // Toggle debug mode
+      if (e.key === 'd' || e.key === 'D') {
         setDebugMode(prev => !prev);
       }
 
-      // Testing shortcuts for state transitions
-      if (e.code === 'Digit1') {
-        // Force all to NORMAL
-        Object.keys(levelStates).forEach(level => {
-          if (levelStates[level] !== STATES.NORMAL) {
-            transitionState(level, STATES.NORMAL, false);
-          }
-        });
+      // Force predator states (for testing)
+      if (e.key === '1') {
+        fsm.forceState('predator', STATES.NORMAL);
+        setLevelStates(fsm.getAllStates());
       }
-      if (e.code === 'Digit2') {
-        // Force all to EXCITED
-        Object.keys(levelStates).forEach(level => {
-          if (levelStates[level] !== STATES.DEAD) {
-            transitionState(level, STATES.EXCITED, false);
-          }
-        });
+      if (e.key === '2') {
+        fsm.forceState('predator', STATES.EXCITED);
+        setLevelStates(fsm.getAllStates());
       }
-      if (e.code === 'Digit3') {
-        // Force individual to DEAD (demonstration)
-        transitionState('individual', STATES.DEAD);
+      if (e.key === '3') {
+        fsm.forceState('predator', STATES.DEAD);
+        setLevelStates(fsm.getAllStates());
+      }
+
+      // Inject data spike (increase hunger)
+      if (e.key === ' ') {
+        e.preventDefault();
+        targetValuesRef.current['predator-Hunger'] = 95 + Math.random() * 5;
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [levelStates]);
+  }, []);
 
-  // Shape configurations for organic layout
-  const shapeConfigs = [
-    {
-      id: 'predator',
-      clipPath: 'clip-shape1',
-      style: { left: '66.511px', top: '75.203px', width: '1198.350px', height: '1538.933px' },
-      dataPosition: { right: '20px', top: '100px' }
-    },
-    {
-      id: 'flock',
-      clipPath: 'clip-shape2',
-      style: { left: '1112.338px', top: '75.203px', width: '934.026px', height: '1655.733px' },
-      dataPosition: { right: '20px', top: '100px' }
-    },
-    {
-      id: 'individual',
-      clipPath: 'clip-shape3',
-      style: { left: '66.511px', top: '1539.549px', width: '1783.151px', height: '850.347px' },
-      dataPosition: { right: '20px', top: '20px' }
-    },
-    {
-      id: 'muscle',
-      clipPath: 'clip-shape4',
-      style: { left: '66.511px', top: '2335.882px', width: '1381.924px', height: '1236.027px' },
-      dataPosition: { right: '20px', top: '20px' }
-    },
-    {
-      id: 'microscopic',
-      clipPath: 'clip-shape5',
-      style: { left: '875.418px', top: '1991.949px', width: '1170.946px', height: '1579.947px' },
-      dataPosition: { right: '20px', top: '100px' }
-    }
-  ];
+  // ============================================================================
+  // RENDER
+  // ============================================================================
 
   return (
     <div style={{
@@ -729,7 +478,7 @@ const VideoInstallation = () => {
         transform: `scale(${scale})`,
         transformOrigin: 'top left'
       }}>
-        {shapeConfigs.map((config, index) => {
+        {shapeConfigs.map((config) => {
           const section = videoSections.find(s => s.id === config.id);
           const currentState = levelStates[section.id];
           const transition = transitioningLevels[section.id];
@@ -858,13 +607,6 @@ const VideoInstallation = () => {
         })}
       </div>
 
-      {/* Predator Status Indicator */}
-      {predatorActive && (
-        <div className="fixed top-8 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-8 py-3 text-xl font-bold tracking-widest animate-pulse z-50">
-          PREDATsdfsdfOR ACTIVE
-        </div>
-      )}
-
       {/* Debug Panel */}
       {debugMode && (
         <div className="fixed top-4 right-4 bg-black bg-opacity-90 border border-gray-700 rounded p-4 text-xs space-y-3 max-w-md z-50">
@@ -877,7 +619,7 @@ const VideoInstallation = () => {
           {DEBUG_CONFIG.SHOW_FPS && (
             <div className="flex items-center justify-between">
               <span className="text-gray-400">FPS:</span>
-              <span className={`font-mono font-bold ${fps >= 55 ? 'text-green-400' : fps >= 30 ? 'text-yellow-400' : 'text-red-400'}`}>
+              <span className={`font-mono font-bold ${fps >= 55 ? 'text-green-400' : fps >= 45 ? 'text-yellow-400' : fps >= 30 ? 'text-orange-400' : 'text-red-400'}`}>
                 {fps}
               </span>
             </div>
@@ -897,30 +639,10 @@ const VideoInstallation = () => {
               </div>
             ))}
           </div>
-
-          {/* Transition History */}
-          {DEBUG_CONFIG.SHOW_HISTORY && transitionHistory.length > 0 && (
-            <div className="space-y-1">
-              <div className="text-gray-400 font-bold">Recent Transitions:</div>
-              <div className="space-y-1 max-h-32 overflow-y-auto">
-                {transitionHistory.map((transition, idx) => (
-                  <div key={idx} className="text-[9px] text-gray-500 font-mono">
-                    <span className="text-gray-600">{transition.timestamp}</span>
-                    {' '}
-                    <span className="text-blue-400">{transition.levelId}</span>
-                    {' '}
-                    <span className="text-gray-600">{transition.fromState}</span>
-                    →
-                    <span className="text-yellow-400">{transition.toState}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       )}
 
-      {/* Instructions */}
+      {/* Instructions (only in debug mode) */}
       {debugMode && (
         <div className="fixed bottom-4 left-4 text-gray-700 text-xs space-y-1">
           <div>Press SPACE to activate predator | D for debug | ESC to exit</div>
@@ -932,4 +654,5 @@ const VideoInstallation = () => {
 };
 
 // Render the app
-ReactDOM.render(<VideoInstallation />, document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
