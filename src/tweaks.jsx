@@ -9,10 +9,10 @@ const TWEAKS = {
   // Data overlay font sizes
   fonts: {
     // Data point labels (e.g., "HUNGER", "PREY PROXIMITY")
-    dataPointLabel: '9px',
+    dataPointLabel: '20px',
 
     // Data value numbers (e.g., "85.2", "42.1")
-    dataValue: '10px',
+    dataValue: '20px',
 
     // Section title (e.g., "Predator")
     sectionTitle: '14px',
@@ -33,7 +33,7 @@ const TWEAKS = {
   // Data overlay styling
   overlay: {
     // Background opacity (0-1)
-    backgroundOpacity: 0.8,
+    backgroundOpacity: 0.0,
 
     // Padding around data overlay
     padding: '20px',
@@ -41,26 +41,32 @@ const TWEAKS = {
     // Border radius
     borderRadius: '8px',
 
+    // Minimum width of overlay
+    minWidth: '300px',
+
     // Maximum width of overlay
-    maxWidth: '300px',
+    maxWidth: '1000px',
 
     // Gap between data points
-    dataPointGap: '8px'
+    dataPointGap: '50px',
+
+    // Fixed width for data values to prevent layout shift
+    dataValueWidth: '60px'
   },
 
   // Data bar styling
   bars: {
     // Height of data bars
-    height: '4px',
+    height: '10px',
 
     // Border radius of bars
-    borderRadius: '2px',
+    borderRadius: '10px',
 
     // Bar background color (empty state)
     backgroundColor: '#333',
 
     // Bar fill color (normal state)
-    fillColor: '#fff',
+    fillColor: '#aaa',
 
     // Bar fill color (dead state)
     deadColor: '#666'

@@ -16,8 +16,10 @@ const tweaks = typeof TWEAKS !== 'undefined' ? TWEAKS : {
     backgroundOpacity: 0.8,
     padding: '20px',
     borderRadius: '8px',
+    minWidth: '300px',
     maxWidth: '300px',
-    dataPointGap: '8px'
+    dataPointGap: '8px',
+    dataValueWidth: '60px'
   },
   bars: {
     height: '4px',
@@ -846,6 +848,7 @@ const VideoInstallation = () => {
                 backgroundColor: `rgba(0, 0, 0, ${tweaks.overlay.backgroundOpacity})`,
                 padding: tweaks.overlay.padding,
                 borderRadius: tweaks.overlay.borderRadius,
+                minWidth: tweaks.overlay.minWidth,
                 maxWidth: tweaks.overlay.maxWidth,
                 zIndex: 10,
                 color: tweaks.colors.valueColor,
@@ -909,7 +912,13 @@ const VideoInstallation = () => {
                               </span>
                             )}
                           </div>
-                          <span style={{ fontSize: tweaks.fonts.dataValue, textAlign: 'right', color: tweaks.colors.valueColor }}>
+                          <span style={{
+                            fontSize: tweaks.fonts.dataValue,
+                            textAlign: 'right',
+                            color: tweaks.colors.valueColor,
+                            minWidth: tweaks.overlay.dataValueWidth,
+                            display: 'inline-block'
+                          }}>
                             {value}
                             {debugMode && DEBUG_CONFIG.SHOW_LERP_RATES && targetValue !== undefined && (
                               <span style={{ color: tweaks.colors.targetValueColor, fontSize: tweaks.fonts.targetValue }}>
