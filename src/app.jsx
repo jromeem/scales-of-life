@@ -1,5 +1,46 @@
 const { useState, useEffect, useRef } = React;
 
+// Import TWEAKS configuration (loaded from tweaks.jsx)
+// If TWEAKS is not defined, use default values
+const tweaks = typeof TWEAKS !== 'undefined' ? TWEAKS : {
+  fonts: {
+    dataPointLabel: '9px',
+    dataValue: '10px',
+    sectionTitle: '14px',
+    sectionSubtitle: '10px',
+    stateBadge: '10px',
+    lerpRate: '8px',
+    targetValue: '8px'
+  },
+  overlay: {
+    backgroundOpacity: 0.8,
+    padding: '20px',
+    borderRadius: '8px',
+    maxWidth: '300px',
+    dataPointGap: '8px'
+  },
+  bars: {
+    height: '4px',
+    borderRadius: '2px',
+    backgroundColor: '#333',
+    fillColor: '#fff',
+    deadColor: '#666'
+  },
+  colors: {
+    labelColor: '#999',
+    valueColor: '#fff',
+    titleColor: '#fff',
+    subtitleColor: '#999',
+    lerpRateColor: '#666',
+    targetValueColor: '#eab308'
+  },
+  stateBadges: {
+    normal: { background: '#2563eb', text: '#fff' },
+    excited: { background: '#dc2626', text: '#fff' },
+    dead: { background: '#666', text: '#999' }
+  }
+};
+
 // ============================================================================
 // BiologicalFSM - Finite State Machine for autonomous biological transitions
 // ============================================================================
@@ -802,27 +843,29 @@ const VideoInstallation = () => {
               <div style={{
                 position: 'absolute',
                 ...config.dataPosition,
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                padding: '20px',
-                borderRadius: '8px',
-                maxWidth: '300px',
+                backgroundColor: `rgba(0, 0, 0, ${tweaks.overlay.backgroundOpacity})`,
+                padding: tweaks.overlay.padding,
+                borderRadius: tweaks.overlay.borderRadius,
+                maxWidth: tweaks.overlay.maxWidth,
                 zIndex: 10,
-                color: 'white',
+                color: tweaks.colors.valueColor,
                 fontFamily: 'monospace',
                 fontSize: '12px'
               }}>
                 {debugMode && (
                   <div style={{ marginBottom: '10px' }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{section.title}</div>
-                    <div style={{ fontSize: '10px', color: '#999' }}>{section.subtitle}</div>
+                    <div style={{ fontWeight: 'bold', fontSize: tweaks.fonts.sectionTitle, color: tweaks.colors.titleColor }}>{section.title}</div>
+                    <div style={{ fontSize: tweaks.fonts.sectionSubtitle, color: tweaks.colors.subtitleColor }}>{section.subtitle}</div>
                     <div style={{
                       marginTop: '5px',
                       padding: '2px 8px',
                       borderRadius: '4px',
                       display: 'inline-block',
-                      backgroundColor: currentState === STATES.DEAD ? '#666' :
-                        currentState === STATES.EXCITED ? '#dc2626' : '#2563eb',
-                      fontSize: '10px'
+                      backgroundColor: currentState === STATES.DEAD ? tweaks.stateBadges.dead.background :
+                        currentState === STATES.EXCITED ? tweaks.stateBadges.excited.background : tweaks.stateBadges.normal.background,
+                      color: currentState === STATES.DEAD ? tweaks.stateBadges.dead.text :
+                        currentState === STATES.EXCITED ? tweaks.stateBadges.excited.text : tweaks.stateBadges.normal.text,
+                      fontSize: tweaks.fonts.stateBadge
                     }}>
                       {transition ? '→ TRANSITION' : currentState}
                     </div>
@@ -830,7 +873,7 @@ const VideoInstallation = () => {
                 )}
 
                 {/* Data points */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: tweaks.overlay.dataPointGap }}>
                   {section.dataPoints.map((dataPoint, dpIndex) => {
                     const key = `${section.id}-${dataPoint}`;
                     const value = dataValues[key] || '0.0';
@@ -840,10 +883,10 @@ const VideoInstallation = () => {
 
                     return (
                       <div key={dpIndex} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div style={{ fontSize: '9px', color: '#999', textTransform: 'uppercase' }}>
+                        <div style={{ fontSize: tweaks.fonts.dataPointLabel, color: tweaks.colors.labelColor, textTransform: 'uppercase' }}>
                           {dataPoint}
                           {debugMode && DEBUG_CONFIG.SHOW_LERP_RATES && lerpRate && (
-                            <span style={{ color: '#666', marginLeft: '4px' }}>
+                            <span style={{ color: tweaks.colors.lerpRateColor, marginLeft: '4px', fontSize: tweaks.fonts.lerpRate }}>
                               ({lerpRate.toFixed(2)})
                             </span>
                           )}
@@ -851,22 +894,22 @@ const VideoInstallation = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <div style={{
                             flex: 1,
-                            height: '4px',
-                            backgroundColor: '#333',
-                            borderRadius: '2px',
+                            height: tweaks.bars.height,
+                            backgroundColor: tweaks.bars.backgroundColor,
+                            borderRadius: tweaks.bars.borderRadius,
                             overflow: 'hidden'
                           }}>
                             <div style={{
                               height: '100%',
                               width: `${width}%`,
-                              backgroundColor: isDead ? '#666' : '#fff',
+                              backgroundColor: isDead ? tweaks.bars.deadColor : tweaks.bars.fillColor,
                               transition: 'width 0.3s'
                             }} />
                           </div>
-                          <span style={{ fontSize: '100px', minWidth: '40px', textAlign: 'right' }}>
+                          <span style={{ fontSize: tweaks.fonts.dataValue, minWidth: '40px', textAlign: 'right', color: tweaks.colors.valueColor }}>
                             {value}
                             {debugMode && DEBUG_CONFIG.SHOW_LERP_RATES && targetValue !== undefined && (
-                              <span style={{ color: '#eab308', fontSize: '8px' }}>
+                              <span style={{ color: tweaks.colors.targetValueColor, fontSize: tweaks.fonts.targetValue }}>
                                 →{targetValue.toFixed(0)}
                               </span>
                             )}
