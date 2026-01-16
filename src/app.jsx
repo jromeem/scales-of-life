@@ -302,83 +302,7 @@ const TRANSITION_RULES = {
   }
 };
 
-// Data coupling rules: How levels influence each other's data points
-// Format: { sourceLevel: [{ targetLevel, targetDataPoint, influence, mode, condition }] }
-const COUPLING_RULES = {
-  predator: [
-    {
-      targetLevel: 'flock',
-      targetDataPoint: 'Collective Energy',
-      influence: 15,
-      mode: 'add',
-      condition: (sourceState) => sourceState === STATES.EXCITED
-    },
-    {
-      targetLevel: 'individual',
-      targetDataPoint: 'Fear Level',
-      influence: 20,
-      mode: 'add',
-      condition: (sourceState) => sourceState === STATES.EXCITED
-    }
-  ],
-  flock: [
-    {
-      targetLevel: 'individual',
-      targetDataPoint: 'Neighbor Proximity',
-      influence: -10,
-      mode: 'add',
-      condition: (sourceState) => sourceState === STATES.EXCITED
-    },
-    {
-      targetLevel: 'muscle',
-      targetDataPoint: 'Force Production',
-      influence: 10,
-      mode: 'add',
-      condition: (sourceState) => sourceState === STATES.EXCITED
-    }
-  ],
-  individual: [
-    {
-      targetLevel: 'muscle',
-      targetDataPoint: 'Electrical Activation',
-      influence: 15,
-      mode: 'add',
-      condition: (sourceState) => sourceState === STATES.EXCITED
-    },
-    {
-      targetLevel: 'muscle',
-      targetDataPoint: 'Lactic Acid',
-      influence: 8,
-      mode: 'add',
-      condition: (sourceState) => sourceState === STATES.EXCITED
-    }
-  ],
-  muscle: [
-    {
-      targetLevel: 'microscopic',
-      targetDataPoint: 'ATP Consumption',
-      influence: 12,
-      mode: 'add',
-      condition: (sourceState) => sourceState === STATES.EXCITED
-    },
-    {
-      targetLevel: 'microscopic',
-      targetDataPoint: 'Cross-bridge Attach/Detach',
-      influence: 10,
-      mode: 'add',
-      condition: (sourceState) => sourceState === STATES.EXCITED
-    }
-  ],
-  microscopic: [
-    {
-      targetLevel: 'muscle',
-      targetDataPoint: 'Heat',
-      influence: 5,
-      mode: 'add',
-      condition: (sourceState) => sourceState === STATES.EXCITED
-    }
-  ]
-};
+// Data coupling removed - values now lerp independently
 
 // FSM configuration object
 const FSM_CONFIG = {
@@ -386,7 +310,7 @@ const FSM_CONFIG = {
   transitions: TRANSITIONS,
   levels: LEVELS,
   transitionRules: TRANSITION_RULES,
-  couplingRules: COUPLING_RULES
+  couplingRules: {} // No coupling - independent lerping
 };
 
 
@@ -649,17 +573,14 @@ const VideoInstallation = () => {
           });
         });
 
-        // Apply data coupling from FSM
-        const coupledValues = fsm.applyDataCoupling(newValues, fsm.getAllStates());
-
         // Evaluate transitions every 30 frames (~2 times per second at 60fps)
         evaluationCounter++;
         if (evaluationCounter >= 30) {
-          fsm.evaluateTransitions(coupledValues);
+          fsm.evaluateTransitions(newValues);
           evaluationCounter = 0;
         }
 
-        return coupledValues;
+        return newValues;
       });
 
       animationFrameId = requestAnimationFrame(animate);
