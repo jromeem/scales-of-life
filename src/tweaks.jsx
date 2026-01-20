@@ -28,7 +28,7 @@ const TWEAKS = {
     dataValue: '40px',
 
     // Section title (e.g., "Predator")
-    sectionTitle: '40px',
+    sectionTitle: '30px',
 
     // Section subtitle (e.g., "Bird of Prey")
     sectionSubtitle: '10px',
@@ -63,20 +63,23 @@ const TWEAKS = {
     // Gap between data points
     dataPointGap: '50px',
 
-    // Fixed width for data values to prevent layout shift
-    dataValueWidth: '60px'
+    // Gap between label and bar (horizontal spacing)
+    labelBarGap: '20px',
+
+    // Width of the label column (for right-aligned labels)
+    labelWidth: '300px'
   },
 
   // Data bar styling
   bars: {
     // Select bar style: 'filled', 'outlined', 'minimal', 'segmented', 'gradient', 'dashed'
-    style: 'filled',
+    style: 'segmented',
 
     // Height of data bars
-    height: '10px',
+    height: '20px',
 
     // Border radius of bars
-    borderRadius: '10px',
+    borderRadius: '0px',
 
     // Bar background color (empty state)
     backgroundColor: '#333',
@@ -94,7 +97,7 @@ const TWEAKS = {
     segmentCount: 20,
 
     // Segment gap (for 'segmented' style)
-    segmentGap: '2px'
+    segmentGap: '5px'
   },
 
   // Colors

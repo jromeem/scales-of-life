@@ -739,35 +739,44 @@ const App = () => {
                     const targetValue = targetValuesRef.current[key];
 
                     return (
-                      <div key={dpIndex} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        {/* Data bar on its own line - rendered based on selected style */}
-                        {renderBar(width, isDead)}
+                      <div key={dpIndex} style={{ display: 'flex', alignItems: 'center', gap: tweaks.overlay.labelBarGap }}>
+                        {/* Label (right-aligned) */}
+                        <div style={{
+                          width: tweaks.overlay.labelWidth,
+                          textAlign: 'right',
+                          fontSize: tweaks.fonts.dataPointLabel,
+                          color: tweaks.colors.labelColor,
+                          textTransform: 'uppercase',
+                          flexShrink: 0
+                        }}>
+                          {dataPoint}
+                          {debugMode && DEBUG_CONFIG.SHOW_LERP_RATES && lerpRate && (
+                            <span style={{ color: tweaks.colors.lerpRateColor, marginLeft: '4px', fontSize: tweaks.fonts.lerpRate }}>
+                              ({lerpRate.toFixed(2)})
+                            </span>
+                          )}
+                        </div>
 
-                        {/* Label on left, value on right */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                          <div style={{ fontSize: tweaks.fonts.dataPointLabel, color: tweaks.colors.labelColor, textTransform: 'uppercase' }}>
-                            {dataPoint}
-                            {debugMode && DEBUG_CONFIG.SHOW_LERP_RATES && lerpRate && (
-                              <span style={{ color: tweaks.colors.lerpRateColor, marginLeft: '4px', fontSize: tweaks.fonts.lerpRate }}>
-                                ({lerpRate.toFixed(2)})
-                              </span>
-                            )}
-                          </div>
+                        {/* Bar (left-aligned, grows to fill space) */}
+                        <div style={{ flex: 1 }}>
+                          {renderBar(width, isDead)}
+                        </div>
+
+                        {/* Debug: Show value if debug mode is on */}
+                        {debugMode && DEBUG_CONFIG.SHOW_LERP_RATES && (
                           <span style={{
                             fontSize: tweaks.fonts.dataValue,
-                            textAlign: 'right',
                             color: tweaks.colors.valueColor,
-                            minWidth: tweaks.overlay.dataValueWidth,
-                            display: 'inline-block'
+                            marginLeft: '10px'
                           }}>
                             {value}
-                            {debugMode && DEBUG_CONFIG.SHOW_LERP_RATES && targetValue !== undefined && (
+                            {targetValue !== undefined && (
                               <span style={{ color: tweaks.colors.targetValueColor, fontSize: tweaks.fonts.targetValue }}>
                                 →{targetValue.toFixed(0)}
                               </span>
                             )}
                           </span>
-                        </div>
+                        )}
                       </div>
                     );
                   })}
