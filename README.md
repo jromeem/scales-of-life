@@ -2,6 +2,23 @@
 
 Interactive video installation displaying 5 levels of biological systems with autonomous state transitions and live data visualization.
 
+## ✨ What's New
+
+### Live Control Panel (Development Mode)
+- **Real-time styling controls** - Adjust all visuals without editing code
+- **6 customizable bar styles** - filled, outlined, minimal, segmented, gradient, dashed
+- **Interactive positioning** - Click and use WASD/arrows to position overlays precisely
+- **Google Fonts integration** - Paste any Google Fonts URL for custom typography
+- **Negative gap support** - Overlap data points for compact layouts
+- **Instant preview** - Changes apply immediately to main window
+- **Save to file** - Persist your tweaks to `tweaks.jsx`
+- **Zero production bloat** - Control panel only runs in dev mode
+
+### Seamless Video Transitions
+- **No more blank flashes!** All 3 video states preloaded simultaneously
+- **Smooth crossfade** - 0.3s opacity transitions between states
+- **Optimized for Mac mini 2018** - Smart memory management (15 videos, ~3GB total)
+
 ## 🎨 Concept
 
 This installation visualizes biological systems across five scales, each operating as an autonomous entity that responds to its own data thresholds and influences other levels through data coupling:
@@ -68,19 +85,21 @@ Each level autonomously monitors its data and transitions between states (NORMAL
 
 ### Running the Installation
 
-**Option 1: Development Mode** (Recommended for development)
+**Option 1: Development Mode with Control Panel** (Recommended for development)
 ```bash
 npm run dev
 ```
 This enables:
 - Hot reloading (auto-refresh on file changes)
 - DevTools automatically open
+- **Live Control Panel** for real-time styling adjustments (see Control Panel section)
 - Best for iterating on the installation
 
-**Option 2: Quick Test Run**
+**Option 2: Production Mode** (For installations)
 ```bash
 npm start
 ```
+This runs without the control panel - optimized for performance.
 
 **Option 3: Build a Standalone App** (Recommended for installations)
 
@@ -108,13 +127,19 @@ The built app will be in the `dist/` folder. You can copy this to any computer a
 
 ## 🎮 Controls
 
-### Keyboard Shortcuts
+### Keyboard Shortcuts (Main Window)
 - **SPACE BAR** - Inject data spike (simulates hunger increase for testing autonomous behavior)
 - **D** - Toggle debug mode (shows FPS, states, transition history, lerp rates)
 - **1** - Force predator to EXCITED state (testing only)
 - **2** - Force predator to DEAD state (testing only)
 - **3** - Force predator to NORMAL state (testing only)
 - **ESC** - Exit fullscreen and quit app
+
+### Positioning Mode Shortcuts (When Active)
+- **Arrow Keys / WASD** - Move overlay (1px precision)
+- **Shift + Arrow Keys / WASD** - Move overlay (10px steps)
+- **Enter / Space** - Confirm position
+- **Escape** - Cancel positioning
 
 ### Physical Button Integration
 - Wire up your hardware button to inject data spikes (see Hardware Integration section)
@@ -181,7 +206,179 @@ The installation uses **SVG clip-paths** to create organic, flowing shapes inste
 - **Data overlays** positioned within each shape
 - **Debug panel** in top-right (toggle with D key)
 
-## 🔧 Customization
+## 🎨 Live Control Panel (Development Mode)
+
+### What is it?
+
+The **Live Control Panel** is a separate window that opens in development mode, allowing you to adjust all visual styling in real-time without editing code. Changes apply instantly to the main window, and you can save them to persist your tweaks.
+
+**Important**: The control panel only runs in development mode (`npm run dev`). It has zero performance impact in production mode.
+
+### Opening the Control Panel
+
+```bash
+npm run dev
+```
+
+Two windows will open:
+1. **Main Window** - Your installation display
+2. **Control Panel** - Live styling controls
+
+### Features
+
+#### 1. Typography Controls
+- **Google Fonts URL** - Paste any Google Fonts URL to change the typeface
+- **Font Family** - Specify the font family name
+
+Example:
+```
+Google Fonts URL: https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap
+Font Family: Roboto
+```
+
+#### 2. Font Size Controls
+Adjust sizes for all text elements using sliders:
+- Data Point Labels
+- Data Values
+- Section Titles
+- Section Subtitles
+- State Badges
+- Lerp Rate Display
+- Target Value Display
+
+#### 3. Overlay Layout Controls
+- **Background Opacity** - Adjust overlay transparency (0.0 = transparent, 1.0 = opaque)
+- **Padding** - Inner spacing around overlay content
+- **Border Radius** - Rounded corners for overlays
+- **Min/Max Width** - Control overlay dimensions
+- **Data Point Gap** - Spacing between data points (supports **negative values** for overlapping)
+- **Label-Bar Gap** - Horizontal space between labels and status bars
+- **Label Width** - Fixed width for data labels
+
+#### 4. Status Bar Styles
+
+Choose from **6 different bar styles** to match your artistic vision:
+
+- **Filled** - Solid filled bar
+- **Outlined** - Hollow border with fill
+- **Minimal** - Simple line indicator
+- **Segmented** - Divided into discrete segments (customize count and gap)
+- **Gradient** - Smooth gradient fill
+- **Dashed** - Dashed line pattern
+
+Configure bar properties:
+- Width (use 'auto' or px value like '200px')
+- Height
+- Border radius
+- Border width
+- Background color
+- Fill color
+- Dead state color
+
+For **Segmented** style:
+- **Segment Count** - Number of segments (5-50)
+- **Segment Gap** - Space between segments (0-20px)
+
+#### 5. Color Controls
+
+Adjust all colors using color pickers or hex input:
+- Label color
+- Value color
+- Title color
+- Subtitle color
+- Lerp rate color
+- Target value color
+- Bar background
+- Bar fill color
+- Bar dead color
+
+Each color has both:
+- **Color picker** - Visual selection
+- **Hex input** - Precise color codes
+
+#### 6. Interactive Overlay Positioning
+
+Position each overlay precisely using keyboard controls:
+
+1. **Click** a positioning button (e.g., "📍 Position Predator Overlay")
+2. The overlay will **glow blue** in the main window
+3. **Use keyboard** to move:
+   - Arrow Keys / WASD: Move 1px
+   - Shift + Arrow Keys / WASD: Move 10px
+4. **Confirm** with Enter/Space, or **Cancel** with Escape
+
+Live position display shows current coordinates (e.g., `right: 657px, top: 1199px`).
+
+### Saving Your Changes
+
+Once you're happy with your adjustments:
+
+1. Click **💾 Save to File** button
+2. Your changes are written to `src/tweaks.jsx`
+3. Changes persist across sessions
+4. Production builds use these saved values
+
+### Resetting Changes
+
+Click **🔄 Reset** to reload values from the `tweaks.jsx` file and discard unsaved changes.
+
+### How It Works Technically
+
+- **IPC Communication** - Control panel communicates with main window via Electron's Inter-Process Communication
+- **Real-time Updates** - Changes apply instantly (no refresh needed)
+- **File Persistence** - Save button writes formatted JavaScript to `tweaks.jsx`
+- **Zero Production Bloat** - Control panel files are completely ignored in production mode
+
+## 🔧 Manual Customization (Advanced)
+
+If you prefer to edit configuration files directly, you can modify `src/tweaks.jsx`:
+
+```javascript
+const TWEAKS = {
+  typography: {
+    googleFontsUrl: 'https://fonts.googleapis.com/css2?family=Inconsolata:wght@200..900&display=swap',
+    fontFamily: 'Inconsolata',
+  },
+  fonts: {
+    dataPointLabel: '18px',
+    dataValue: '40px',
+    sectionTitle: '30px',
+    // ... etc
+  },
+  overlay: {
+    backgroundOpacity: 0,
+    padding: '20px',
+    dataPointGap: '-2px',  // Negative values supported!
+    labelBarGap: '30px',
+    labelWidth: '530px',
+  },
+  bars: {
+    style: 'segmented',  // filled, outlined, minimal, segmented, gradient, dashed
+    width: '200px',
+    height: '11px',
+    borderRadius: '0px',
+    backgroundColor: '#333',
+    fillColor: '#aaa',
+    segmentCount: 22,
+    segmentGap: '2px',
+  },
+  colors: {
+    labelColor: '#999',
+    valueColor: '#fff',
+    titleColor: '#fff',
+    subtitleColor: '#999',
+  },
+  overlayPositions: {
+    predator: { right: '657px', top: '1199px' },
+    flock: { right: '20px', top: '1302px' },
+    individual: { right: '1248px', top: '283px' },
+    muscle: { right: '876px', top: '741px' },
+    microscopic: { right: '30px', top: '1326px' },
+  },
+};
+```
+
+Changes to `tweaks.jsx` require a reload (in dev mode, files auto-reload on save).
 
 ### Adjusting Transition Thresholds
 
@@ -326,12 +523,15 @@ Shows individual interpolation rate for each data point next to its value.
 
 ```
 video-installation-app/
-├── main.js              # Electron main process
-├── package.json         # App configuration
+├── main.js                    # Electron main process (IPC handlers, window management)
+├── package.json               # App configuration
 ├── src/
-│   ├── index.html      # Main HTML entry point
-│   ├── app.jsx         # Complete React app with BiologicalFSM
-│   └── videos/         # Video files organized by level/state
+│   ├── index.html            # Main HTML entry point
+│   ├── app.jsx               # Complete React app with BiologicalFSM
+│   ├── tweaks.jsx            # Visual configuration file (editable via control panel)
+│   ├── control-panel.html    # Control panel UI (dev mode only)
+│   ├── control-panel.js      # Control panel logic (dev mode only)
+│   └── videos/               # Video files organized by level/state
 │       ├── predator/
 │       │   ├── normal.mp4
 │       │   ├── excited.mp4
@@ -352,8 +552,20 @@ video-installation-app/
 │           ├── normal.mp4
 │           ├── excited.mp4
 │           └── dead.mp4
-└── README.md           # This file
+└── README.md                 # This file
 ```
+
+### File Descriptions
+
+**Main Application Files**:
+- `main.js` - Electron main process, manages windows and IPC communication
+- `src/app.jsx` - Complete React app with BiologicalFSM, video rendering, overlay system
+- `src/index.html` - Entry point HTML, loads Babel standalone and React
+- `src/tweaks.jsx` - Configuration file for all visual styling
+
+**Control Panel Files (Dev Mode Only)**:
+- `src/control-panel.html` - UI for live styling controls
+- `src/control-panel.js` - Form interactions and IPC communication with main window
 
 ## 🎯 For Installation Day (Mac mini 2018 Setup)
 
@@ -435,17 +647,36 @@ The app is optimized for:
 - Make sure they're named exactly right (lowercase, .mp4)
 - Try converting to H.264 codec if videos won't play
 - Check browser console for loading errors (press D, then F12)
+- **Note**: All 3 state videos are preloaded for seamless transitions
 
 **App won't start?**
 - Make sure you ran `npm install` first
 - Try deleting `node_modules/` and running `npm install` again
 - Check that all video folders exist
 
+**Control Panel not showing?**
+- Make sure you're running `npm run dev` (not `npm start`)
+- Control panel only appears in development mode
+- Check that `NODE_ENV=development` is set
+- Look for "🎨 Control Panel opened for styling tweaks" in console
+
 **Performance issues?**
-- Compress your videos (aim for 1920x1080 or less)
+- Compress your videos (aim for 1920x1080 or less, 200MB max per video)
 - Close other applications
 - Use a dedicated computer for the installation
 - Check FPS in debug mode (press D)
+- With 15 preloaded videos, ensure each is under 200MB
+
+**Overlays in wrong position?**
+- Use the control panel's positioning buttons (dev mode)
+- Click positioning button, use Arrow Keys/WASD to adjust
+- Confirm with Enter/Space, save changes
+- Or manually edit `overlayPositions` in `src/tweaks.jsx`
+
+**Bar styles not applying?**
+- Check `bars.style` in `tweaks.jsx` matches one of: filled, outlined, minimal, segmented, gradient, dashed
+- For segmented style, ensure `segmentCount` and `segmentGap` are set
+- Reload app after manual tweaks.jsx edits
 
 **States not transitioning?**
 - Enable debug mode (press D) to see current data values
@@ -475,11 +706,19 @@ The app is optimized for:
 - Prevents excessive state flickering
 - Allows data to stabilize before re-evaluation
 
-### Video Playback
-- Videos preload and loop seamlessly within each state
-- State changes trigger immediate video swap
+### Video Playback & Seamless Transitions
+- **All 3 video states preloaded** simultaneously per level (15 videos total)
+- Eliminates blank flash during state transitions
+- State changes use **opacity crossfade** (0.3s) instead of src swapping
+- Only visible video plays at any time (optimized for Mac mini 2018)
+- Videos loop seamlessly within each state
 - Grayscale filter and contrast applied via CSS
 - Organic shapes created with SVG clip-path masks
+
+**Memory optimization**:
+- Recommended: 200MB per video × 15 videos = ~3GB total
+- Safe for Mac mini 2018 (8GB RAM, Intel UHD 630)
+- Use 1920×1080, H.264, 4-5 Mbps, 3-5 min duration
 
 ### Responsive Design
 - Base container: 2112 × 3648 pixels
@@ -496,13 +735,18 @@ The app is optimized for:
 ## 💡 Tips for Artists
 
 - The app is designed to run autonomously once videos are added
-- No coding needed for basic use!
-- For visual tweaks, this README explains what to change
+- **No coding needed!** Use the Control Panel (`npm run dev`) for all visual adjustments
+- **Live feedback**: Changes apply instantly - see what looks good in real-time
+- **6 bar styles** to choose from - experiment to match your artistic vision
+- **Positioning mode**: Click, use WASD/arrows to perfectly position overlays
+- **Negative gaps**: Overlap data points for compact layouts
+- **Custom fonts**: Paste any Google Fonts URL for unique typography
 - The standalone built app can run on any computer without Node.js
 - Perfect for gallery installations - just double-click and go!
 - Use debug mode (D key) during setup to understand system behavior
 - Turn off debug mode before exhibition opens
 - The system creates emergent behavior - each showing will be unique!
+- **Control panel bloat-free**: Production builds are optimized - zero overhead from dev tools
 
 ## 🔬 Extending the System
 
@@ -543,6 +787,68 @@ fetch('/api/sensor-data')
     // ... map other sensor values
   });
 ```
+
+## 🚀 Quick Reference
+
+### Common Workflows
+
+**Setting up for the first time:**
+1. `npm install` - Install dependencies
+2. Add videos to `src/videos/[level]/[state].mp4`
+3. `npm run dev` - Open with control panel
+4. Use control panel to adjust styling
+5. Click "💾 Save to File" when happy
+6. `npm run build:mac-mini` - Create production build
+
+**Adjusting visual styling:**
+1. `npm run dev` - Launch with control panel
+2. Adjust sliders, colors, fonts in control panel
+3. See changes instantly in main window
+4. Click "💾 Save to File" to persist changes
+
+**Positioning overlays:**
+1. `npm run dev` - Launch with control panel
+2. Click positioning button (e.g., "📍 Position Predator Overlay")
+3. Use Arrow Keys or WASD to move (Shift for 10px steps)
+4. Press Enter/Space to confirm
+5. Click "💾 Save to File" to persist positions
+
+**Changing bar style:**
+1. Open control panel (`npm run dev`)
+2. Find "Bars" section
+3. Select style from dropdown (filled, outlined, minimal, segmented, gradient, dashed)
+4. For segmented: adjust segment count and gap sliders
+5. Click "💾 Save to File"
+
+**Trying different fonts:**
+1. Visit https://fonts.google.com
+2. Select a font, click "Get font", then "Get embed code"
+3. Copy the `@import` URL
+4. Open control panel (`npm run dev`)
+5. Paste URL in "Google Fonts URL" field
+6. Enter font family name in "Font Family" field
+7. Click "💾 Save to File"
+
+**Running for exhibition:**
+1. Build: `npm run build:mac-mini`
+2. Copy `.dmg` from `dist/` folder to Mac mini
+3. Install app to Applications
+4. Launch from Applications (no control panel, optimized performance)
+5. Press ESC to exit when needed
+
+### Keyboard Shortcuts Cheat Sheet
+
+**Main Window:**
+- `SPACE` - Inject data spike
+- `D` - Toggle debug mode
+- `1/2/3` - Force predator states (testing)
+- `ESC` - Quit app
+
+**Positioning Mode (when active):**
+- `Arrow Keys / WASD` - Move 1px
+- `Shift + Arrow Keys / WASD` - Move 10px
+- `Enter / Space` - Confirm
+- `Escape` - Cancel
 
 ---
 
