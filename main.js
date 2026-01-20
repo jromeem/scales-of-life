@@ -197,3 +197,22 @@ app.on('activate', () => {
 ipcMain.on('predator-activate', (event) => {
   mainWindow.webContents.send('predator-trigger');
 });
+
+// Handle overlay positioning mode
+ipcMain.on('start-positioning', (event, levelId) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('start-positioning', levelId);
+  }
+});
+
+ipcMain.on('stop-positioning', (event, data) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('stop-positioning', data);
+  }
+});
+
+ipcMain.on('position-update', (event, data) => {
+  if (controlPanelWindow && !controlPanelWindow.isDestroyed()) {
+    controlPanelWindow.webContents.send('position-updated', data);
+  }
+});

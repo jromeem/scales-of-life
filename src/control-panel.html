@@ -325,6 +325,44 @@
     </div>
   </div>
 
+  <!-- Overlay Positioning Section -->
+  <div class="section">
+    <h2>Overlay Positioning</h2>
+    <div class="info">
+      Click a button to activate positioning mode, then use <strong>Arrow Keys</strong> or <strong>WASD</strong> to move the overlay. Press <strong>Enter</strong> or <strong>Space</strong> to confirm.
+    </div>
+
+    <div id="positioning-status" style="margin-bottom: 10px; padding: 10px; background: #2a2a2a; border-radius: 4px; display: none;">
+      <div style="font-weight: 600; color: #0066ff; margin-bottom: 5px;">
+        ✋ Positioning: <span id="active-overlay-name"></span>
+      </div>
+      <div style="font-size: 11px; color: #999;">
+        Position: <span id="active-position"></span>
+      </div>
+      <div style="font-size: 10px; color: #666; margin-top: 5px;">
+        Use Arrow Keys/WASD to move • Enter/Space to confirm • Esc to cancel
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <button class="position-btn" data-level="predator" style="background: #4a5568; padding: 10px; cursor: pointer;">
+        📍 Position Predator Overlay
+      </button>
+      <button class="position-btn" data-level="flock" style="background: #4a5568; padding: 10px; cursor: pointer;">
+        📍 Position Flock Overlay
+      </button>
+      <button class="position-btn" data-level="individual" style="background: #4a5568; padding: 10px; cursor: pointer;">
+        📍 Position Individual Overlay
+      </button>
+      <button class="position-btn" data-level="muscle" style="background: #4a5568; padding: 10px; cursor: pointer;">
+        📍 Position Muscle Overlay
+      </button>
+      <button class="position-btn" data-level="microscopic" style="background: #4a5568; padding: 10px; cursor: pointer;">
+        📍 Position Microscopic Overlay
+      </button>
+    </div>
+  </div>
+
   <script src="control-panel.js"></script>
 </body>
 </html>

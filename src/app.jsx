@@ -247,6 +247,7 @@ const App = () => {
   const [transitionHistory, setTransitionHistory] = useState([]);
   const [scale, setScale] = useState(1);
   const [tweaks, setTweaks] = useState(initialTweaks);
+  const [positioningMode, setPositioningMode] = useState(null); // Which overlay is being positioned
 
   // Refs for lerp system
   const targetValuesRef = useRef({});
@@ -463,6 +464,102 @@ const App = () => {
       ipcRenderer.removeListener('tweaks-updated', handleTweaksUpdate);
     };
   }, []);
+
+  // ============================================================================
+  // OVERLAY POSITIONING MODE
+  // ============================================================================
+
+  useEffect(() => {
+    // Listen for positioning mode start/stop
+    const handleStartPositioning = (event, levelId) => {
+      setPositioningMode(levelId);
+
+      // Highlight the active overlay
+      const overlay = document.querySelector(`.data-overlay-${levelId}`);
+      if (overlay) {
+        overlay.style.boxShadow = '0 0 20px 5px #0066ff';
+      }
+    };
+
+    const handleStopPositioning = (event, { confirmed }) => {
+      // Remove highlight
+      if (positioningMode) {
+        const overlay = document.querySelector(`.data-overlay-${positioningMode}`);
+        if (overlay) {
+          overlay.style.boxShadow = 'none';
+        }
+      }
+
+      setPositioningMode(null);
+    };
+
+    ipcRenderer.on('start-positioning', handleStartPositioning);
+    ipcRenderer.on('stop-positioning', handleStopPositioning);
+
+    return () => {
+      ipcRenderer.removeListener('start-positioning', handleStartPositioning);
+      ipcRenderer.removeListener('stop-positioning', handleStopPositioning);
+    };
+  }, [positioningMode]);
+
+  // Keyboard controls for positioning
+  useEffect(() => {
+    if (!positioningMode) return;
+
+    const handleKeyDown = (e) => {
+      // Movement speed (pixels)
+      const step = e.shiftKey ? 10 : 1;
+
+      let handled = false;
+      const currentPos = tweaks.overlayPositions?.[positioningMode] || { right: '20px', top: '100px' };
+      const newPos = { ...currentPos };
+
+      // Parse current values
+      const parseValue = (val) => parseInt(val) || 0;
+      const top = parseValue(currentPos.top);
+      const bottom = parseValue(currentPos.bottom);
+      const left = parseValue(currentPos.left);
+      const right = parseValue(currentPos.right);
+
+      // Arrow keys / WASD
+      if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+        if (currentPos.top !== undefined) newPos.top = `${Math.max(0, top - step)}px`;
+        else if (currentPos.bottom !== undefined) newPos.bottom = `${bottom + step}px`;
+        handled = true;
+      } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+        if (currentPos.top !== undefined) newPos.top = `${top + step}px`;
+        else if (currentPos.bottom !== undefined) newPos.bottom = `${Math.max(0, bottom - step)}px`;
+        handled = true;
+      } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+        if (currentPos.left !== undefined) newPos.left = `${Math.max(0, left - step)}px`;
+        else if (currentPos.right !== undefined) newPos.right = `${right + step}px`;
+        handled = true;
+      } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+        if (currentPos.left !== undefined) newPos.left = `${left + step}px`;
+        else if (currentPos.right !== undefined) newPos.right = `${Math.max(0, right - step)}px`;
+        handled = true;
+      }
+
+      if (handled) {
+        e.preventDefault();
+
+        // Update tweaks with new position
+        setTweaks(prev => ({
+          ...prev,
+          overlayPositions: {
+            ...prev.overlayPositions,
+            [positioningMode]: newPos
+          }
+        }));
+
+        // Send position update back to control panel
+        ipcRenderer.send('position-update', { levelId: positioningMode, position: newPos });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [positioningMode, tweaks]);
 
   // ============================================================================
   // RESPONSIVE SCALING
@@ -716,19 +813,22 @@ const App = () => {
               })}
 
               {/* Data overlay for each shape */}
-              <div style={{
-                position: 'absolute',
-                ...config.dataPosition,
-                backgroundColor: `rgba(0, 0, 0, ${tweaks.overlay.backgroundOpacity})`,
-                padding: tweaks.overlay.padding,
-                borderRadius: tweaks.overlay.borderRadius,
-                minWidth: tweaks.overlay.minWidth,
-                maxWidth: tweaks.overlay.maxWidth,
-                zIndex: 10,
-                color: tweaks.colors.valueColor,
-                fontFamily: tweaks.typography.fontFamily,
-                fontSize: '12px'
-              }}>
+              <div
+                className={`data-overlay-${section.id}`}
+                style={{
+                  position: 'absolute',
+                  ...(tweaks.overlayPositions && tweaks.overlayPositions[section.id] ? tweaks.overlayPositions[section.id] : config.dataPosition),
+                  backgroundColor: `rgba(0, 0, 0, ${tweaks.overlay.backgroundOpacity})`,
+                  padding: tweaks.overlay.padding,
+                  borderRadius: tweaks.overlay.borderRadius,
+                  minWidth: tweaks.overlay.minWidth,
+                  maxWidth: tweaks.overlay.maxWidth,
+                  zIndex: 10,
+                  color: tweaks.colors.valueColor,
+                  fontFamily: tweaks.typography.fontFamily,
+                  fontSize: '12px',
+                  transition: 'box-shadow 0.3s'
+                }}>
                 {debugMode && (
                   <div style={{ marginBottom: '10px' }}>
                     <div style={{ fontWeight: 'bold', fontSize: tweaks.fonts.sectionTitle, color: tweaks.colors.titleColor }}>{section.title}</div>

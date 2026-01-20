@@ -226,5 +226,120 @@ async function handleReset() {
   }
 }
 
+// ============================================================================
+// OVERLAY POSITIONING SYSTEM
+// ============================================================================
+
+let activePositioningLevel = null;
+
+// Start positioning mode for a specific overlay
+function startPositioning(levelId) {
+  activePositioningLevel = levelId;
+
+  // Show status indicator
+  const statusEl = document.getElementById('positioning-status');
+  const nameEl = document.getElementById('active-overlay-name');
+  const posEl = document.getElementById('active-position');
+
+  statusEl.style.display = 'block';
+  nameEl.textContent = levelId.charAt(0).toUpperCase() + levelId.slice(1);
+
+  // Get current position
+  const position = currentTweaks.overlayPositions?.[levelId] || { right: '20px', top: '100px' };
+  updatePositionDisplay(position);
+
+  // Highlight active button
+  document.querySelectorAll('.position-btn').forEach(btn => {
+    if (btn.dataset.level === levelId) {
+      btn.style.background = '#0066ff';
+      btn.style.fontWeight = '600';
+    } else {
+      btn.style.background = '#4a5568';
+      btn.style.fontWeight = 'normal';
+    }
+  });
+
+  // Send positioning mode to main window
+  ipcRenderer.send('start-positioning', levelId);
+}
+
+// Stop positioning mode
+function stopPositioning(confirmed = true) {
+  if (!activePositioningLevel) return;
+
+  // Hide status indicator
+  document.getElementById('positioning-status').style.display = 'none';
+
+  // Reset button styles
+  document.querySelectorAll('.position-btn').forEach(btn => {
+    btn.style.background = '#4a5568';
+    btn.style.fontWeight = 'normal';
+  });
+
+  // Send stop positioning to main window
+  ipcRenderer.send('stop-positioning', { confirmed });
+
+  activePositioningLevel = null;
+}
+
+// Update position display
+function updatePositionDisplay(position) {
+  const posEl = document.getElementById('active-position');
+  const parts = [];
+
+  if (position.top) parts.push(`top: ${position.top}`);
+  if (position.bottom) parts.push(`bottom: ${position.bottom}`);
+  if (position.left) parts.push(`left: ${position.left}`);
+  if (position.right) parts.push(`right: ${position.right}`);
+
+  posEl.textContent = parts.join(', ');
+}
+
+// Handle position update from main window
+ipcRenderer.on('position-updated', (event, { levelId, position }) => {
+  // Update local state
+  if (!currentTweaks.overlayPositions) {
+    currentTweaks.overlayPositions = {};
+  }
+  currentTweaks.overlayPositions[levelId] = position;
+
+  // Update display
+  updatePositionDisplay(position);
+
+  // Send to main window
+  ipcRenderer.send('update-tweaks', currentTweaks);
+});
+
+// Set up positioning button listeners
+function setupPositioningListeners() {
+  document.querySelectorAll('.position-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const levelId = btn.dataset.level;
+      if (activePositioningLevel === levelId) {
+        // Clicking again stops positioning
+        stopPositioning(true);
+      } else {
+        startPositioning(levelId);
+      }
+    });
+  });
+
+  // Listen for keyboard shortcuts in control panel
+  document.addEventListener('keydown', (e) => {
+    if (!activePositioningLevel) return;
+
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      stopPositioning(true);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      stopPositioning(false);
+    }
+  });
+}
+
 // Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+  init();
+  setupPositioningListeners();
+});
