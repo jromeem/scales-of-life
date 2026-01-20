@@ -25,7 +25,7 @@ const TWEAKS = {
     borderRadius: '0px',
     minWidth: '100px',
     maxWidth: '2000px',
-    dataPointGap: '0px',
+    dataPointGap: '-50px',
     labelBarGap: '30px',
     labelWidth: '530px',
   },

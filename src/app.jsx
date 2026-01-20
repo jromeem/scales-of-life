@@ -850,7 +850,7 @@ const App = () => {
                 )}
 
                 {/* Data points */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: tweaks.overlay.dataPointGap }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: parseFloat(tweaks.overlay.dataPointGap) >= 0 ? tweaks.overlay.dataPointGap : '0px' }}>
                   {section.dataPoints.map((dataPoint, dpIndex) => {
                     const key = `${section.id}-${dataPoint}`;
                     const value = dataValues[key] || '0.0';
@@ -858,8 +858,17 @@ const App = () => {
                     const lerpRate = lerpRatesRef.current[key];
                     const targetValue = targetValuesRef.current[key];
 
+                    // Handle negative gap with margin instead of gap property
+                    const gapValue = parseFloat(tweaks.overlay.dataPointGap);
+                    const itemMargin = gapValue < 0 && dpIndex > 0 ? `${gapValue}px` : '0px';
+
                     return (
-                      <div key={dpIndex} style={{ display: 'flex', alignItems: 'center', gap: tweaks.overlay.labelBarGap }}>
+                      <div key={dpIndex} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: tweaks.overlay.labelBarGap,
+                        marginTop: itemMargin
+                      }}>
                         {/* Label (right-aligned) */}
                         <div style={{
                           width: tweaks.overlay.labelWidth,
