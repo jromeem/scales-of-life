@@ -168,31 +168,31 @@ const videoSections = [
     id: 'predator',
     title: 'Predator',
     subtitle: 'Bird of Prey',
-    dataPoints: ['Hunger', 'Prey Proximity', 'Energy Available']
+    dataPoints: ['Blood Sugar', 'Speed', 'Reation Time', 'Sensory Confidence', 'Success Probability', 'Time to Strike']
   },
   {
     id: 'flock',
     title: 'Flock',
     subtitle: 'Collective Behavior',
-    dataPoints: ['Cohesion', 'Variance', 'Collective Energy']
+    dataPoints: ['Group Kinetic Energy', 'Mean Inter-Individual Distance', 'Directional Alignment Variance', 'Obstacle Avoidance', 'Response Latency']
   },
   {
     id: 'individual',
     title: 'Individual',
     subtitle: 'Single Bird',
-    dataPoints: ['Fear Level', 'Heart Rate', 'Neighbor Proximity']
+    dataPoints: ['Metabolic Flux', 'Functional Output', 'Activation Timing', 'Mechanical Compliance', 'Structural Alignment', 'Signal Fidelity']
   },
   {
     id: 'muscle',
     title: 'Muscle',
     subtitle: 'Tissue Contraction',
-    dataPoints: ['Electrical Activation', 'Force Production', 'Lactic Acid', 'Heat']
+    dataPoints: ['Cross-bridge Turnover', 'ATP Consumption', 'Extent of Reaction', 'Molecular Fatigue', 'External Load', 'Activation']
   },
   {
     id: 'microscopic',
     title: 'Microscopic',
     subtitle: 'Molecular Activity',
-    dataPoints: ['ATP Consumption', 'Cross-bridge Attach/Detach', 'Calcium Ions']
+    dataPoints: ['Force Production', 'Control Signal', 'Stiffness', 'Entropy']
   }
 ];
 
