@@ -67,7 +67,7 @@ const TWEAKS = {
     labelBarGap: '50px',
 
     // Width of the label column (for right-aligned labels)
-    labelWidth: '500px'
+    labelWidth: '800px'
   },
 
   // Data bar styling
@@ -76,7 +76,7 @@ const TWEAKS = {
     style: 'segmented',
 
     // Width of data bars (use 'auto' to fill available space, or specify like '500px')
-    width: 'auto',
+    width: '300px',
 
     // Height of data bars
     height: '30px',
@@ -97,7 +97,7 @@ const TWEAKS = {
     borderWidth: '2px',
 
     // Number of segments (for 'segmented' style)
-    segmentCount: 10,
+    segmentCount: 20,
 
     // Segment gap (for 'segmented' style)
     segmentGap: '5px'

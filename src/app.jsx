@@ -1,11 +1,12 @@
 const { useState, useEffect, useRef } = React;
+const { ipcRenderer } = require('electron');
 
 // ============================================================================
 // TWEAKS CONFIGURATION
 // ============================================================================
 
-// Import TWEAKS from tweaks.jsx (loaded first in index.html)
-const tweaks = typeof TWEAKS !== 'undefined' ? TWEAKS : {
+// Import TWEAKS from tweaks.jsx (loaded first in index.html) - used as initial state
+const initialTweaks = typeof TWEAKS !== 'undefined' ? TWEAKS : {
   fonts: {
     dataPointLabel: '9px',
     dataValue: '10px',
@@ -245,6 +246,7 @@ const App = () => {
   const [fps, setFps] = useState(60);
   const [transitionHistory, setTransitionHistory] = useState([]);
   const [scale, setScale] = useState(1);
+  const [tweaks, setTweaks] = useState(initialTweaks);
 
   // Refs for lerp system
   const targetValuesRef = useRef({});
@@ -442,6 +444,24 @@ const App = () => {
     targetValuesRef.current = initialTargets;
     lerpRatesRef.current = initialRates;
     setLevelStates(fsm.getAllStates());
+  }, []);
+
+  // ============================================================================
+  // LIVE TWEAKS UPDATES (from control panel)
+  // ============================================================================
+
+  useEffect(() => {
+    // Listen for tweak updates from control panel
+    const handleTweaksUpdate = (event, newTweaks) => {
+      console.log('🎨 Tweaks updated from control panel');
+      setTweaks(newTweaks);
+    };
+
+    ipcRenderer.on('tweaks-updated', handleTweaksUpdate);
+
+    return () => {
+      ipcRenderer.removeListener('tweaks-updated', handleTweaksUpdate);
+    };
   }, []);
 
   // ============================================================================
