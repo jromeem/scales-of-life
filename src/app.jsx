@@ -765,8 +765,10 @@ const App = () => {
         width: '2112px',
         height: '3648px',
         position: 'relative',
-        transform: `scale(${scale})`,
-        transformOrigin: 'top left'
+        transform: `scale(${scale * 1.04})`,
+        transformOrigin: 'top left',
+        left: '-17px',
+        top: '-15px'
       }}>
         {shapeConfigs.map((config) => {
           const section = videoSections.find(s => s.id === config.id);
