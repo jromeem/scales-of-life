@@ -758,7 +758,7 @@ const App = () => {
                         </div>
 
                         {/* Bar (left-aligned, grows to fill space) */}
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, minWidth: '200px' }}>
                           {renderBar(width, isDead)}
                         </div>
 
