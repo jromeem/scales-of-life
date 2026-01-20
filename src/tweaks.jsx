@@ -11,24 +11,24 @@ const TWEAKS = {
     // Google Fonts import URL
     // Example: 'https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap'
     // Leave empty string '' to use default monospace font
-    googleFontsUrl: '',
+    googleFontsUrl: 'https://fonts.googleapis.com/css2?family=Inconsolata:wght@200..900&display=swap',
 
     // Font family to use (must match the font imported above)
     // Example: '"Roboto Mono", monospace'
     // Leave as 'monospace' for default
-    fontFamily: 'monospace'
+    fontFamily: 'Inconsolata'
   },
 
   // Data overlay font sizes
   fonts: {
     // Data point labels (e.g., "HUNGER", "PREY PROXIMITY")
-    dataPointLabel: '20px',
+    dataPointLabel: '40px',
 
     // Data value numbers (e.g., "85.2", "42.1")
-    dataValue: '20px',
+    dataValue: '40px',
 
     // Section title (e.g., "Predator")
-    sectionTitle: '14px',
+    sectionTitle: '40px',
 
     // Section subtitle (e.g., "Bird of Prey")
     sectionSubtitle: '10px',
@@ -69,6 +69,9 @@ const TWEAKS = {
 
   // Data bar styling
   bars: {
+    // Select bar style: 'filled', 'outlined', 'minimal', 'segmented', 'gradient', 'dashed'
+    style: 'filled',
+
     // Height of data bars
     height: '10px',
 
@@ -82,7 +85,16 @@ const TWEAKS = {
     fillColor: '#aaa',
 
     // Bar fill color (dead state)
-    deadColor: '#666'
+    deadColor: '#666',
+
+    // Outline/border thickness (for 'outlined' and 'minimal' styles)
+    borderWidth: '2px',
+
+    // Number of segments (for 'segmented' style)
+    segmentCount: 20,
+
+    // Segment gap (for 'segmented' style)
+    segmentGap: '2px'
   },
 
   // Colors

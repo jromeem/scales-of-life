@@ -270,6 +270,153 @@ const App = () => {
     return `videos/${levelId}/${stateFile}.mp4`;
   };
 
+  // Render bar based on selected style
+  const renderBar = (width, isDead) => {
+    const fillColor = isDead ? tweaks.bars.deadColor : tweaks.bars.fillColor;
+    const bgColor = tweaks.bars.backgroundColor;
+    const barHeight = tweaks.bars.height;
+    const borderRadius = tweaks.bars.borderRadius;
+    const borderWidth = tweaks.bars.borderWidth;
+
+    switch (tweaks.bars.style) {
+      case 'filled':
+        // Style 1: Classic filled bar
+        return (
+          <div style={{
+            width: '100%',
+            height: barHeight,
+            backgroundColor: bgColor,
+            borderRadius: borderRadius,
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              height: '100%',
+              width: `${width}%`,
+              backgroundColor: fillColor,
+              transition: 'width 0.3s'
+            }} />
+          </div>
+        );
+
+      case 'outlined':
+        // Style 2: Outlined bar with border
+        return (
+          <div style={{
+            width: '100%',
+            height: barHeight,
+            border: `${borderWidth} solid ${fillColor}`,
+            borderRadius: borderRadius,
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              height: '100%',
+              width: `${width}%`,
+              backgroundColor: fillColor,
+              transition: 'width 0.3s',
+              opacity: 0.3
+            }} />
+          </div>
+        );
+
+      case 'minimal':
+        // Style 3: Minimal line with no background
+        return (
+          <div style={{
+            width: '100%',
+            height: barHeight,
+            position: 'relative',
+            borderRadius: borderRadius
+          }}>
+            <div style={{
+              height: '100%',
+              width: `${width}%`,
+              backgroundColor: fillColor,
+              borderRadius: borderRadius,
+              transition: 'width 0.3s'
+            }} />
+          </div>
+        );
+
+      case 'segmented':
+        // Style 4: Segmented/quantized bar
+        const segmentCount = tweaks.bars.segmentCount;
+        const segmentGap = tweaks.bars.segmentGap;
+        const filledSegments = Math.round((width / 100) * segmentCount);
+
+        return (
+          <div style={{
+            width: '100%',
+            height: barHeight,
+            display: 'flex',
+            gap: segmentGap,
+            alignItems: 'center'
+          }}>
+            {Array.from({ length: segmentCount }).map((_, i) => (
+              <div
+                key={i}
+                style={{
+                  flex: 1,
+                  height: '100%',
+                  backgroundColor: i < filledSegments ? fillColor : bgColor,
+                  borderRadius: '2px',
+                  transition: 'background-color 0.1s'
+                }}
+              />
+            ))}
+          </div>
+        );
+
+      case 'gradient':
+        // Style 5: Gradient fade effect
+        return (
+          <div style={{
+            width: '100%',
+            height: barHeight,
+            backgroundColor: bgColor,
+            borderRadius: borderRadius,
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              height: '100%',
+              width: `${width}%`,
+              background: `linear-gradient(to right, ${fillColor}, ${fillColor}88)`,
+              transition: 'width 0.3s'
+            }} />
+          </div>
+        );
+
+      case 'dashed':
+        // Style 6: Dashed/striped pattern
+        return (
+          <div style={{
+            width: '100%',
+            height: barHeight,
+            backgroundColor: bgColor,
+            borderRadius: borderRadius,
+            overflow: 'hidden',
+            position: 'relative'
+          }}>
+            <div style={{
+              height: '100%',
+              width: `${width}%`,
+              background: `repeating-linear-gradient(
+                90deg,
+                ${fillColor} 0px,
+                ${fillColor} 8px,
+                transparent 8px,
+                transparent 12px
+              )`,
+              transition: 'width 0.3s'
+            }} />
+          </div>
+        );
+
+      default:
+        return renderBar.call(this, width, isDead);
+    }
+  };
+
   // ============================================================================
   // INITIALIZATION
   // ============================================================================
@@ -593,21 +740,8 @@ const App = () => {
 
                     return (
                       <div key={dpIndex} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        {/* Data bar on its own line */}
-                        <div style={{
-                          width: '100%',
-                          height: tweaks.bars.height,
-                          backgroundColor: tweaks.bars.backgroundColor,
-                          borderRadius: tweaks.bars.borderRadius,
-                          overflow: 'hidden'
-                        }}>
-                          <div style={{
-                            height: '100%',
-                            width: `${width}%`,
-                            backgroundColor: isDead ? tweaks.bars.deadColor : tweaks.bars.fillColor,
-                            transition: 'width 0.3s'
-                          }} />
-                        </div>
+                        {/* Data bar on its own line - rendered based on selected style */}
+                        {renderBar(width, isDead)}
 
                         {/* Label on left, value on right */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
