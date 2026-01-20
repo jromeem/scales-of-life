@@ -758,7 +758,11 @@ const App = () => {
                         </div>
 
                         {/* Bar (left-aligned, grows to fill space) */}
-                        <div style={{ flex: 1, minWidth: '200px' }}>
+                        <div style={{
+                          flex: tweaks.bars.width === 'auto' ? 1 : 'none',
+                          width: tweaks.bars.width === 'auto' ? 'auto' : tweaks.bars.width,
+                          minWidth: tweaks.bars.width === 'auto' ? '200px' : 'auto'
+                        }}>
                           {renderBar(width, isDead)}
                         </div>
 

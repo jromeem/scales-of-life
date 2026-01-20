@@ -58,16 +58,16 @@ const TWEAKS = {
     minWidth: '300px',
 
     // Maximum width of overlay
-    maxWidth: '1000px',
+    maxWidth: '1500px',
 
     // Gap between data points
-    dataPointGap: '50px',
+    dataPointGap: '0px',
 
     // Gap between label and bar (horizontal spacing)
-    labelBarGap: '20px',
+    labelBarGap: '50px',
 
     // Width of the label column (for right-aligned labels)
-    labelWidth: '300px'
+    labelWidth: '500px'
   },
 
   // Data bar styling
@@ -75,8 +75,11 @@ const TWEAKS = {
     // Select bar style: 'filled', 'outlined', 'minimal', 'segmented', 'gradient', 'dashed'
     style: 'segmented',
 
+    // Width of data bars (use 'auto' to fill available space, or specify like '500px')
+    width: 'auto',
+
     // Height of data bars
-    height: '20px',
+    height: '30px',
 
     // Border radius of bars
     borderRadius: '0px',
@@ -94,7 +97,7 @@ const TWEAKS = {
     borderWidth: '2px',
 
     // Number of segments (for 'segmented' style)
-    segmentCount: 20,
+    segmentCount: 10,
 
     // Segment gap (for 'segmented' style)
     segmentGap: '5px'
