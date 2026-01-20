@@ -461,6 +461,13 @@ const App = () => {
       backgroundColor: '#000',
       position: 'relative'
     }}>
+      {/* Google Fonts Import */}
+      {tweaks.typography.googleFontsUrl && (
+        <style>
+          {`@import url('${tweaks.typography.googleFontsUrl}');`}
+        </style>
+      )}
+
       {/* SVG Clip Paths */}
       <svg style={{ position: 'absolute', top: '-999px', left: '-999px', width: 0, height: 0 }}>
         <defs>
@@ -552,7 +559,7 @@ const App = () => {
                 maxWidth: tweaks.overlay.maxWidth,
                 zIndex: 10,
                 color: tweaks.colors.valueColor,
-                fontFamily: 'monospace',
+                fontFamily: tweaks.typography.fontFamily,
                 fontSize: '12px'
               }}>
                 {debugMode && (

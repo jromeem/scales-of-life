@@ -6,6 +6,19 @@
  */
 
 const TWEAKS = {
+  // Typography settings
+  typography: {
+    // Google Fonts import URL
+    // Example: 'https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap'
+    // Leave empty string '' to use default monospace font
+    googleFontsUrl: '',
+
+    // Font family to use (must match the font imported above)
+    // Example: '"Roboto Mono", monospace'
+    // Leave as 'monospace' for default
+    fontFamily: 'monospace'
+  },
+
   // Data overlay font sizes
   fonts: {
     // Data point labels (e.g., "HUNGER", "PREY PROXIMITY")
