@@ -11,7 +11,7 @@ const TWEAKS = {
     fontFamily: 'Inconsolata',
   },
   fonts: {
-    dataPointLabel: '18px',
+    dataPointLabel: '16px',
     dataValue: '40px',
     sectionTitle: '30px',
     sectionSubtitle: '10px',
@@ -32,14 +32,14 @@ const TWEAKS = {
   bars: {
     style: 'segmented',
     width: '200px',
-    height: '11px',
+    height: '13px',
     borderRadius: '0px',
     backgroundColor: '#333',
     fillColor: '#aaa',
     deadColor: '#666',
     borderWidth: '1px',
-    segmentCount: 22,
-    segmentGap: '2px',
+    segmentCount: 26,
+    segmentGap: '4px',
   },
   colors: {
     labelColor: '#999',
@@ -65,24 +65,24 @@ const TWEAKS = {
   },
   overlayPositions: {
     predator: {
-      right: '657px',
-      top: '1199px',
+      right: '637px',
+      top: '1189px',
     },
     flock: {
-      right: '20px',
-      top: '1302px',
+      right: '60px',
+      top: '1282px',
     },
     individual: {
-      right: '1248px',
-      top: '283px',
+      right: '78px',
+      top: '203px',
     },
     muscle: {
-      right: '876px',
-      top: '741px',
+      right: '896px',
+      top: '671px',
     },
     microscopic: {
-      right: '30px',
-      top: '1326px',
+      right: '90px',
+      top: '1286px',
     },
   },
 };
