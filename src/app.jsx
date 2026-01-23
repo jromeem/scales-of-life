@@ -551,59 +551,6 @@ const App = () => {
 
 
   // ============================================================================
-  // VIDEO PRELOAD MONITORING
-  // ============================================================================
-
-  useEffect(() => {
-    // Monitor video preload status
-    const videoElements = document.querySelectorAll('video[data-video-id]');
-    let loadedCount = 0;
-    const totalVideos = videoElements.length;
-
-    const checkLoadStatus = (video) => {
-      const videoId = video.getAttribute('data-video-id');
-
-      const handleLoadedData = () => {
-        loadedCount++;
-        console.log(`✅ Video loaded (${loadedCount}/${totalVideos}): ${videoId} - readyState: ${video.readyState}, buffered: ${video.buffered.length > 0 ? video.buffered.end(0).toFixed(1) + 's' : '0s'}, duration: ${video.duration.toFixed(1)}s`);
-
-        if (loadedCount === totalVideos) {
-          console.log(`🎉 ALL ${totalVideos} VIDEOS FULLY LOADED INTO MEMORY`);
-        }
-      };
-
-      const handleProgress = () => {
-        if (video.buffered.length > 0) {
-          const bufferedEnd = video.buffered.end(video.buffered.length - 1);
-          const duration = video.duration;
-          const percentBuffered = (bufferedEnd / duration * 100).toFixed(1);
-          console.log(`⏳ Buffering ${videoId}: ${percentBuffered}% (${bufferedEnd.toFixed(1)}s / ${duration.toFixed(1)}s)`);
-        }
-      };
-
-      const handleSeeking = () => {
-        console.warn(`⚠️ SEEKING detected on ${videoId} - this may trigger new network requests!`);
-      };
-
-      const handleSeeked = () => {
-        console.log(`✓ Seeked ${videoId} to ${video.currentTime.toFixed(1)}s`);
-      };
-
-      video.addEventListener('loadeddata', handleLoadedData, { once: true });
-      video.addEventListener('progress', handleProgress);
-      video.addEventListener('seeking', handleSeeking);
-      video.addEventListener('seeked', handleSeeked);
-
-      // Check if already loaded
-      if (video.readyState >= 3) {
-        handleLoadedData();
-      }
-    };
-
-    videoElements.forEach(checkLoadStatus);
-  }, []);
-
-  // ============================================================================
   // VIDEO PLAYBACK MANAGEMENT
   // ============================================================================
 
