@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Tweaks Control Panel</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+      font-size: 13px;
+      overflow-y: scroll;
+    }
+
+    h1 {
+      margin: 0 0 20px 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    h2 {
+      margin: 20px 0 10px 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #aaa;
+      border-bottom: 1px solid #333;
+      padding-bottom: 5px;
+    }
+
+    .section {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #222;
+      border-radius: 6px;
+      border: 1px solid #333;
+    }
+
+    .control-group {
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .control-group label {
+      flex: 1;
+      color: #ccc;
+      font-size: 12px;
+    }
+
+    .control-group input[type="text"],
+    .control-group input[type="number"],
+    .control-group select {
+      flex: 0 0 120px;
+      padding: 6px 8px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 12px;
+    }
+
+    .control-group input[type="color"] {
+      flex: 0 0 50px;
+      height: 30px;
+      padding: 2px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .control-group input[type="range"] {
+      flex: 0 0 150px;
+    }
+
+    .control-group .value-display {
+      flex: 0 0 60px;
+      text-align: right;
+      color: #999;
+      font-family: monospace;
+      font-size: 11px;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #0066ff;
+    }
+
+    .button-group {
+      position: sticky;
+      top: 0;
+      background: #1a1a1a;
+      padding: 10px 0;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #333;
+      display: flex;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    button {
+      padding: 8px 16px;
+      background: #0066ff;
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #0052cc;
+    }
+
+    button.secondary {
+      background: #444;
+    }
+
+    button.secondary:hover {
+      background: #555;
+    }
+
+    .info {
+      padding: 10px;
+      background: #2a2a2a;
+      border-left: 3px solid #0066ff;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <div class="button-group">
+    <h1>🎨 Tweaks Control Panel</h1>
+    <button id="save-btn">💾 Save to File</button>
+    <button id="reset-btn" class="secondary">🔄 Reset</button>
+  </div>
+
+  <div class="info">
+    💡 Changes apply instantly. Click "Save to File" to persist changes to tweaks.jsx
+  </div>
+
+  <!-- Typography Section -->
+  <div class="section">
+    <h2>Typography</h2>
+    <div class="control-group">
+      <label>Google Fonts URL</label>
+      <input type="text" id="typography.googleFontsUrl" style="flex: 1;">
+    </div>
+    <div class="control-group">
+      <label>Font Family</label>
+      <input type="text" id="typography.fontFamily">
+    </div>
+  </div>
+
+  <!-- Font Sizes Section -->
+  <div class="section">
+    <h2>Font Sizes</h2>
+    <div class="control-group">
+      <label>Data Point Label</label>
+      <input type="range" id="fonts.dataPointLabel" min="10" max="80" step="1">
+      <span class="value-display" id="fonts.dataPointLabel-display">40px</span>
+    </div>
+    <div class="control-group">
+      <label>Data Value</label>
+      <input type="range" id="fonts.dataValue" min="10" max="80" step="1">
+      <span class="value-display" id="fonts.dataValue-display">40px</span>
+    </div>
+    <div class="control-group">
+      <label>Section Title</label>
+      <input type="range" id="fonts.sectionTitle" min="10" max="60" step="1">
+      <span class="value-display" id="fonts.sectionTitle-display">30px</span>
+    </div>
+    <div class="control-group">
+      <label>Section Subtitle</label>
+      <input type="range" id="fonts.sectionSubtitle" min="8" max="30" step="1">
+      <span class="value-display" id="fonts.sectionSubtitle-display">10px</span>
+    </div>
+    <div class="control-group">
+      <label>State Badge</label>
+      <input type="range" id="fonts.stateBadge" min="8" max="30" step="1">
+      <span class="value-display" id="fonts.stateBadge-display">10px</span>
+    </div>
+  </div>
+
+  <!-- Overlay Section -->
+  <div class="section">
+    <h2>Overlay</h2>
+    <div class="control-group">
+      <label>Background Opacity</label>
+      <input type="range" id="overlay.backgroundOpacity" min="0" max="1" step="0.05">
+      <span class="value-display" id="overlay.backgroundOpacity-display">0.0</span>
+    </div>
+    <div class="control-group">
+      <label>Padding</label>
+      <input type="range" id="overlay.padding" min="0" max="100" step="5">
+      <span class="value-display" id="overlay.padding-display">20px</span>
+    </div>
+    <div class="control-group">
+      <label>Border Radius</label>
+      <input type="range" id="overlay.borderRadius" min="0" max="30" step="1">
+      <span class="value-display" id="overlay.borderRadius-display">8px</span>
+    </div>
+    <div class="control-group">
+      <label>Min Width</label>
+      <input type="range" id="overlay.minWidth" min="100" max="800" step="10">
+      <span class="value-display" id="overlay.minWidth-display">300px</span>
+    </div>
+    <div class="control-group">
+      <label>Max Width</label>
+      <input type="range" id="overlay.maxWidth" min="500" max="2000" step="50">
+      <span class="value-display" id="overlay.maxWidth-display">1500px</span>
+    </div>
+    <div class="control-group">
+      <label>Data Point Gap</label>
+      <input type="range" id="overlay.dataPointGap" min="-50" max="100" step="1">
+      <span class="value-display" id="overlay.dataPointGap-display">0px</span>
+    </div>
+    <div class="control-group">
+      <label>Label-Bar Gap</label>
+      <input type="range" id="overlay.labelBarGap" min="0" max="200" step="5">
+      <span class="value-display" id="overlay.labelBarGap-display">50px</span>
+    </div>
+    <div class="control-group">
+      <label>Label Width</label>
+      <input type="range" id="overlay.labelWidth" min="100" max="1000" step="10">
+      <span class="value-display" id="overlay.labelWidth-display">800px</span>
+    </div>
+  </div>
+
+  <!-- Bars Section -->
+  <div class="section">
+    <h2>Bars</h2>
+    <div class="control-group">
+      <label>Style</label>
+      <select id="bars.style">
+        <option value="filled">Filled</option>
+        <option value="outlined">Outlined</option>
+        <option value="minimal">Minimal</option>
+        <option value="segmented">Segmented</option>
+        <option value="gradient">Gradient</option>
+        <option value="dashed">Dashed</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Width (use 'auto' or px value)</label>
+      <input type="text" id="bars.width">
+    </div>
+    <div class="control-group">
+      <label>Height</label>
+      <input type="range" id="bars.height" min="5" max="100" step="1">
+      <span class="value-display" id="bars.height-display">30px</span>
+    </div>
+    <div class="control-group">
+      <label>Border Radius</label>
+      <input type="range" id="bars.borderRadius" min="0" max="30" step="1">
+      <span class="value-display" id="bars.borderRadius-display">0px</span>
+    </div>
+    <div class="control-group">
+      <label>Border Width</label>
+      <input type="range" id="bars.borderWidth" min="1" max="10" step="1">
+      <span class="value-display" id="bars.borderWidth-display">2px</span>
+    </div>
+    <div class="control-group">
+      <label>Segment Count</label>
+      <input type="range" id="bars.segmentCount" min="5" max="50" step="1">
+      <span class="value-display" id="bars.segmentCount-display">20</span>
+    </div>
+    <div class="control-group">
+      <label>Segment Gap</label>
+      <input type="range" id="bars.segmentGap" min="0" max="20" step="1">
+      <span class="value-display" id="bars.segmentGap-display">5px</span>
+    </div>
+  </div>
+
+  <!-- Colors Section -->
+  <div class="section">
+    <h2>Colors</h2>
+    <div class="control-group">
+      <label>Label Color</label>
+      <input type="color" id="colors.labelColor">
+      <input type="text" id="colors.labelColor-text" style="flex: 0 0 80px;">
+    </div>
+    <div class="control-group">
+      <label>Value Color</label>
+      <input type="color" id="colors.valueColor">
+      <input type="text" id="colors.valueColor-text" style="flex: 0 0 80px;">
+    </div>
+    <div class="control-group">
+      <label>Title Color</label>
+      <input type="color" id="colors.titleColor">
+      <input type="text" id="colors.titleColor-text" style="flex: 0 0 80px;">
+    </div>
+    <div class="control-group">
+      <label>Subtitle Color</label>
+      <input type="color" id="colors.subtitleColor">
+      <input type="text" id="colors.subtitleColor-text" style="flex: 0 0 80px;">
+    </div>
+    <div class="control-group">
+      <label>Bar Background</label>
+      <input type="color" id="bars.backgroundColor">
+      <input type="text" id="bars.backgroundColor-text" style="flex: 0 0 80px;">
+    </div>
+    <div class="control-group">
+      <label>Bar Fill Color</label>
+      <input type="color" id="bars.fillColor">
+      <input type="text" id="bars.fillColor-text" style="flex: 0 0 80px;">
+    </div>
+    <div class="control-group">
+      <label>Bar Recovering Color</label>
+      <input type="color" id="bars.recoveringColor">
+      <input type="text" id="bars.recoveringColor-text" style="flex: 0 0 80px;">
+    </div>
+  </div>
+
+  <!-- Overlay Positioning Section -->
+  <div class="section">
+    <h2>Overlay Positioning</h2>
+    <div class="info">
+      Click a button to activate positioning mode, then use <strong>Arrow Keys</strong> or <strong>WASD</strong> to move the overlay. Press <strong>Enter</strong> or <strong>Space</strong> to confirm.
+    </div>
+
+    <div id="positioning-status" style="margin-bottom: 10px; padding: 10px; background: #2a2a2a; border-radius: 4px; display: none;">
+      <div style="font-weight: 600; color: #0066ff; margin-bottom: 5px;">
+        ✋ Positioning: <span id="active-overlay-name"></span>
+      </div>
+      <div style="font-size: 11px; color: #999;">
+        Position: <span id="active-position"></span>
+      </div>
+      <div style="font-size: 10px; color: #666; margin-top: 5px;">
+        Use Arrow Keys/WASD to move • Enter/Space to confirm • Esc to cancel
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <button class="position-btn" data-level="predator" style="background: #4a5568; padding: 10px; cursor: pointer;">
+        📍 Position Predator Overlay
+      </button>
+      <button class="position-btn" data-level="flock" style="background: #4a5568; padding: 10px; cursor: pointer;">
+        📍 Position Flock Overlay
+      </button>
+      <button class="position-btn" data-level="heart" style="background: #4a5568; padding: 10px; cursor: pointer;">
+        📍 Position Heart Overlay
+      </button>
+      <button class="position-btn" data-level="swarm" style="background: #4a5568; padding: 10px; cursor: pointer;">
+        📍 Position Swarm Overlay
+      </button>
+      <button class="position-btn" data-level="myosin" style="background: #4a5568; padding: 10px; cursor: pointer;">
+        📍 Position Myosin Overlay
+      </button>
+    </div>
+  </div>
+
+  <script src="control-panel.js"></script>
+</body>
+</html>

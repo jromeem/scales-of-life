@@ -4,8 +4,10 @@
   "description": "Interactive Video Installation - 5-Level Biological System",
   "main": "main.js",
   "scripts": {
+    "dev": "cross-env NODE_ENV=development nodemon --watch main.js --watch src/ --exec electron .",
     "start": "electron .",
-    "build:mac": "electron-builder --mac",
+    "build:mac": "electron-builder --mac --x64 --arm64",
+    "build:mac-mini": "electron-builder --mac --x64",
     "build:win": "electron-builder --win",
     "build:linux": "electron-builder --linux"
   },
@@ -15,15 +17,30 @@
     "mac": {
       "category": "public.app-category.entertainment",
       "icon": "build/icon.icns",
-      "target": ["dmg", "zip"]
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "minimumSystemVersion": "10.13.0",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "type": "distribution"
     },
     "win": {
       "icon": "build/icon.ico",
-      "target": ["nsis", "portable"]
+      "target": [
+        "nsis",
+        "portable"
+      ]
     },
     "linux": {
       "icon": "build/icon.png",
-      "target": ["AppImage", "deb"]
+      "target": [
+        "AppImage",
+        "deb"
+      ]
     },
     "files": [
       "main.js",
@@ -31,11 +48,18 @@
       "package.json"
     ]
   },
-  "keywords": ["art", "installation", "electron", "video"],
+  "keywords": [
+    "art",
+    "installation",
+    "electron",
+    "video"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "electron": "^28.0.0",
-    "electron-builder": "^24.9.1"
+    "electron-builder": "^24.9.1",
+    "nodemon": "^3.1.11"
   }
 }
