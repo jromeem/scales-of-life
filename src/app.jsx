@@ -57,7 +57,7 @@ const STATES = {
   DEAD: 'DEAD'
 };
 
-const LEVELS = ['predator', 'flock', 'individual', 'muscle', 'microscopic'];
+const LEVELS = ['predator', 'flock', 'heart', 'swarm', 'myosin'];
 
 // Transition rules: when each level should activate (NORMAL → EXCITED)
 const TRANSITION_RULES = {
@@ -74,22 +74,22 @@ const TRANSITION_RULES = {
       return cohesion < 50 && variance > 50;
     }
   },
-  individual: {
+  heart: {
     shouldActivate: (dataValues, levelId) => {
       const fearLevel = parseFloat(dataValues[`${levelId}-Fear Level`]) || 0;
       return fearLevel > 40;
     }
   },
-  muscle: {
-    shouldActivate: (dataValues, levelId) => {
-      const electricalActivation = parseFloat(dataValues[`${levelId}-Electrical Activation`]) || 0;
-      return electricalActivation > 60;
-    }
-  },
-  microscopic: {
+  swarm: {
     shouldActivate: (dataValues, levelId) => {
       const atpConsumption = parseFloat(dataValues[`${levelId}-ATP Consumption`]) || 0;
       return atpConsumption > 70;
+    }
+  },
+  myosin: {
+    shouldActivate: (dataValues, levelId) => {
+      const electricalActivation = parseFloat(dataValues[`${levelId}-Electrical Activation`]) || 0;
+      return electricalActivation > 60;
     }
   }
 };
@@ -179,25 +179,25 @@ const videoSections = [
     scale: 'meter'
   },
   {
-    id: 'individual',
-    title: 'Individual',
-    subtitle: 'Single Bird',
+    id: 'heart',
+    title: 'Heart',
+    subtitle: 'Heart Cells',
     dataPoints: ['Metabolic Flux', 'Functional Output', 'Activation Timing', 'Mechanical Compliance', 'Structural Alignment', 'Signal Fidelity'],
     scale: 'cm'
   },
   {
-    id: 'muscle',
-    title: 'Muscle',
-    subtitle: 'Tissue Contraction',
-    dataPoints: ['Cross-bridge Turnover', 'ATP Consumption', 'Extent of Reaction', 'Molecular Fatigue', 'External Load', 'Activation'],
-    scale: 'nm'
-  },
-  {
-    id: 'microscopic',
-    title: 'Microscopic',
-    subtitle: 'Molecular Activity',
+    id: 'swarm',
+    title: 'Swarm',
+    subtitle: 'Microtubule Swarms',
     dataPoints: ['Force Production', 'Control Signal', 'Stiffness', 'Entropy'],
     scale: 'μm'
+  },
+  {
+    id: 'myosin',
+    title: 'Myosin',
+    subtitle: 'Myosin Motors',
+    dataPoints: ['Cross-bridge Turnover', 'ATP Consumption', 'Extent of Reaction', 'Molecular Fatigue', 'External Load', 'Activation'],
+    scale: 'nm'
   }
 ];
 
@@ -219,21 +219,21 @@ const shapeConfigs = [
     dataPosition: { right: '20px', top: '100px' }
   },
   {
-    id: 'individual',
+    id: 'heart',
     clipPath: 'clip-shape3',
     style: { left: '66.511px', top: '1539.549px', width: '1783.151px', height: '850.347px' },
     dataPosition: { right: '20px', top: '100px' }
   },
   {
-    id: 'muscle',
-    clipPath: 'clip-shape4',
-    style: { left: '66.511px', top: '2335.882px', width: '1381.924px', height: '1236.027px' },
+    id: 'swarm',
+    clipPath: 'clip-shape5',
+    style: { left: '875.418px', top: '1991.949px', width: '1170.946px', height: '1579.947px' },
     dataPosition: { right: '20px', top: '100px' }
   },
   {
-    id: 'microscopic',
-    clipPath: 'clip-shape5',
-    style: { left: '875.418px', top: '1991.949px', width: '1170.946px', height: '1579.947px' },
+    id: 'myosin',
+    clipPath: 'clip-shape4',
+    style: { left: '66.511px', top: '2335.882px', width: '1381.924px', height: '1236.027px' },
     dataPosition: { right: '20px', top: '100px' }
   }
 ];
@@ -701,7 +701,7 @@ const App = () => {
         setLevelStates(fsm.getAllStates());
       }
       if (e.key === '3') {
-        fsm.forceState('predator', STATES.DEAD);
+        fsm.forceState('heart', STATES.DEAD);
         setLevelStates(fsm.getAllStates());
       }
 
@@ -984,7 +984,7 @@ const App = () => {
       {debugMode && (
         <div className="fixed bottom-4 left-4 text-gray-700 text-xs space-y-1">
           <div>Press SPACE to activate predator | D for debug | ESC to exit</div>
-          <div>Press 1: Reset to NORMAL | 2: All EXCITED | 3: Kill individual</div>
+          <div>Press 1: Reset to NORMAL | 2: All EXCITED | 3: Kill heart</div>
         </div>
       )}
     </div>

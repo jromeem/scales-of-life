@@ -72,17 +72,17 @@ const TWEAKS = {
       right: '60px',
       top: '1282px',
     },
-    individual: {
+    heart: {
       right: '78px',
       top: '203px',
     },
-    muscle: {
-      right: '896px',
-      top: '671px',
-    },
-    microscopic: {
+    swarm: {
       right: '90px',
       top: '1286px',
+    },
+    myosin: {
+      right: '896px',
+      top: '671px',
     },
   },
 };
