@@ -52,102 +52,12 @@ const initialTweaks = typeof TWEAKS !== 'undefined' ? TWEAKS : {
 // ============================================================================
 
 const STATES = {
-  NORMAL: 'NORMAL',
+  CALM: 'CALM',
   EXCITED: 'EXCITED',
-  DEAD: 'DEAD'
+  RECOVERING: 'RECOVERING'
 };
 
 const LEVELS = ['predator', 'flock', 'heart', 'swarm', 'myosin'];
-
-// Transition rules: when each level should activate (NORMAL → EXCITED)
-const TRANSITION_RULES = {
-  predator: {
-    shouldActivate: (dataValues, levelId) => {
-      const hunger = parseFloat(dataValues[`${levelId}-Hunger`]) || 0;
-      return hunger > 80;
-    }
-  },
-  flock: {
-    shouldActivate: (dataValues, levelId) => {
-      const cohesion = parseFloat(dataValues[`${levelId}-Cohesion`]) || 0;
-      const variance = parseFloat(dataValues[`${levelId}-Variance`]) || 0;
-      return cohesion < 50 && variance > 50;
-    }
-  },
-  heart: {
-    shouldActivate: (dataValues, levelId) => {
-      const fearLevel = parseFloat(dataValues[`${levelId}-Fear Level`]) || 0;
-      return fearLevel > 40;
-    }
-  },
-  swarm: {
-    shouldActivate: (dataValues, levelId) => {
-      const atpConsumption = parseFloat(dataValues[`${levelId}-ATP Consumption`]) || 0;
-      return atpConsumption > 70;
-    }
-  },
-  myosin: {
-    shouldActivate: (dataValues, levelId) => {
-      const electricalActivation = parseFloat(dataValues[`${levelId}-Electrical Activation`]) || 0;
-      return electricalActivation > 60;
-    }
-  }
-};
-
-class BiologicalFSM {
-  constructor(config = {}) {
-    this.states = config.states || STATES;
-    this.levels = config.levels || LEVELS;
-    this.transitionRules = config.transitionRules || TRANSITION_RULES;
-    this.levelStates = {};
-
-    // Initialize all levels to NORMAL
-    this.levels.forEach(level => {
-      this.levelStates[level] = this.states.NORMAL;
-    });
-  }
-
-  getState(levelId) {
-    return this.levelStates[levelId];
-  }
-
-  getAllStates() {
-    return { ...this.levelStates };
-  }
-
-  setState(levelId, newState) {
-    this.levelStates[levelId] = newState;
-  }
-
-  // Evaluate all levels and transition if thresholds are met
-  evaluateTransitions(dataValues) {
-    this.levels.forEach(levelId => {
-      const currentState = this.levelStates[levelId];
-
-      // Can't transition from DEAD state
-      if (currentState === this.states.DEAD) return;
-
-      const rule = this.transitionRules[levelId];
-      if (!rule) return;
-
-      const shouldActivate = rule.shouldActivate(dataValues, levelId);
-
-      // NORMAL → EXCITED
-      if (currentState === this.states.NORMAL && shouldActivate) {
-        this.setState(levelId, this.states.EXCITED);
-      }
-      // EXCITED → NORMAL (when threshold no longer met)
-      else if (currentState === this.states.EXCITED && !shouldActivate) {
-        this.setState(levelId, this.states.NORMAL);
-      }
-    });
-  }
-
-  // Force state change (for keyboard shortcuts)
-  forceState(levelId, state) {
-    this.levelStates[levelId] = state;
-  }
-}
 
 // ============================================================================
 // DEBUG CONFIGURATION
@@ -155,7 +65,6 @@ class BiologicalFSM {
 
 const DEBUG_CONFIG = {
   SHOW_FPS: true,
-  SHOW_HISTORY: true,
   SHOW_LERP_RATES: true
 };
 
@@ -246,10 +155,8 @@ const App = () => {
   // State management
   const [dataValues, setDataValues] = useState({});
   const [levelStates, setLevelStates] = useState({});
-  const [transitioningLevels, setTransitioningLevels] = useState({});
   const [debugMode, setDebugMode] = useState(false);
   const [fps, setFps] = useState(60);
-  const [transitionHistory, setTransitionHistory] = useState([]);
   const [scale, setScale] = useState(1);
   const [tweaks, setTweaks] = useState(initialTweaks);
   const [positioningMode, setPositioningMode] = useState(null); // Which overlay is being positioned
@@ -257,30 +164,19 @@ const App = () => {
   // Refs for lerp system
   const targetValuesRef = useRef({});
   const lerpRatesRef = useRef({});
-  const fsmRef = useRef(null);
-
-  // Initialize FSM
-  if (!fsmRef.current) {
-    fsmRef.current = new BiologicalFSM({
-      states: STATES,
-      levels: LEVELS,
-      transitionRules: TRANSITION_RULES
-    });
-  }
-  const fsm = fsmRef.current;
 
   // Linear interpolation function
   const lerp = (start, end, t) => start + (end - start) * t;
 
   // Get video path based on state
-  const getVideoPath = (levelId, state, isTransitioning) => {
-    const stateFile = (state || STATES.NORMAL).toLowerCase();
+  const getVideoPath = (levelId, state) => {
+    const stateFile = (state || STATES.CALM).toLowerCase();
     return `videos/${levelId}/${stateFile}.mp4`;
   };
 
   // Render bar based on selected style
-  const renderBar = (width, isDead) => {
-    const fillColor = isDead ? tweaks.bars.deadColor : tweaks.bars.fillColor;
+  const renderBar = (width, isRecovering) => {
+    const fillColor = isRecovering ? tweaks.bars.recoveringColor : tweaks.bars.fillColor;
     const bgColor = tweaks.bars.backgroundColor;
     const barHeight = tweaks.bars.height;
     const borderRadius = tweaks.bars.borderRadius;
@@ -434,6 +330,7 @@ const App = () => {
     const initialValues = {};
     const initialTargets = {};
     const initialRates = {};
+    const initialStates = {};
 
     videoSections.forEach(section => {
       section.dataPoints.forEach(point => {
@@ -444,12 +341,14 @@ const App = () => {
         // Random lerp rate between 0.02 and 0.3
         initialRates[key] = 0.02 + Math.random() * 0.28;
       });
+      // Initialize all levels to CALM state
+      initialStates[section.id] = STATES.CALM;
     });
 
     setDataValues(initialValues);
     targetValuesRef.current = initialTargets;
     lerpRatesRef.current = initialRates;
-    setLevelStates(fsm.getAllStates());
+    setLevelStates(initialStates);
   }, []);
 
   // ============================================================================
@@ -609,8 +508,6 @@ const App = () => {
 
   useEffect(() => {
     let animationFrameId;
-    let evaluationCounter = 0;
-    let lastFrameTime = performance.now();
     let frameCount = 0;
     let fpsUpdateTime = performance.now();
 
@@ -642,18 +539,9 @@ const App = () => {
           });
         });
 
-        // Evaluate transitions every 30 frames (~2 times per second at 60fps)
-        evaluationCounter++;
-        if (evaluationCounter >= 30) {
-          fsm.evaluateTransitions(newValues);
-          setLevelStates(fsm.getAllStates());
-          evaluationCounter = 0;
-        }
-
         return newValues;
       });
 
-      lastFrameTime = currentTime;
       animationFrameId = requestAnimationFrame(animate);
     };
 
@@ -661,22 +549,30 @@ const App = () => {
     return () => cancelAnimationFrame(animationFrameId);
   }, []);
 
+
   // ============================================================================
   // VIDEO PLAYBACK MANAGEMENT
   // ============================================================================
 
   useEffect(() => {
-    // Manage video play/pause when states change for seamless transitions
-    const videoElements = document.querySelectorAll('video');
-    videoElements.forEach(video => {
-      const opacity = parseFloat(window.getComputedStyle(video).opacity);
-      if (opacity > 0) {
-        // Visible video should be playing
-        video.play().catch(err => console.warn('Video play failed:', err));
-      } else {
-        // Hidden videos should be paused to save resources
-        video.pause();
-      }
+    // When state changes, play the visible video and pause hidden ones
+    videoSections.forEach(section => {
+      const currentState = levelStates[section.id];
+
+      Object.values(STATES).forEach(state => {
+        const videoElement = document.querySelector(`video[data-video-id="${section.id}-${state}"]`);
+        if (videoElement) {
+          if (state === currentState) {
+            // This video should be visible and playing
+            videoElement.currentTime = 0;
+            videoElement.play().catch(err => console.warn('Play failed:', err));
+          } else {
+            // This video should be hidden and paused
+            videoElement.pause();
+            videoElement.currentTime = 0;
+          }
+        }
+      });
     });
   }, [levelStates]);
 
@@ -691,30 +587,56 @@ const App = () => {
         setDebugMode(prev => !prev);
       }
 
-      // Force predator states (for testing)
-      if (e.key === '1') {
-        fsm.forceState('predator', STATES.NORMAL);
-        setLevelStates(fsm.getAllStates());
-      }
-      if (e.key === '2') {
-        fsm.forceState('predator', STATES.EXCITED);
-        setLevelStates(fsm.getAllStates());
-      }
-      if (e.key === '3') {
-        fsm.forceState('heart', STATES.DEAD);
-        setLevelStates(fsm.getAllStates());
-      }
-
-      // Inject data spike (increase hunger)
+      // Spacebar: Trigger state sequence for all levels (CALM → EXCITED → RECOVERING → CALM)
       if (e.key === ' ') {
         e.preventDefault();
-        targetValuesRef.current['predator-Hunger'] = 95 + Math.random() * 5;
+
+        // Check if all levels are in CALM state
+        const allCalm = Object.values(levelStates).every(state => state === STATES.CALM);
+
+        if (allCalm) {
+          // Transition all levels to EXCITED
+          const newStates = {};
+          LEVELS.forEach(level => {
+            newStates[level] = STATES.EXCITED;
+          });
+          setLevelStates(newStates);
+
+          // After 10 seconds, transition to RECOVERING
+          setTimeout(() => {
+            const recoveringStates = {};
+            LEVELS.forEach(level => {
+              recoveringStates[level] = STATES.RECOVERING;
+            });
+            setLevelStates(recoveringStates);
+
+            // After another 10 seconds, return to CALM
+            setTimeout(() => {
+              const calmStates = {};
+              LEVELS.forEach(level => {
+                calmStates[level] = STATES.CALM;
+              });
+              setLevelStates(calmStates);
+            }, 10000);
+          }, 10000);
+        }
+      }
+
+      // Debug: Force states (for testing)
+      if (e.key === '1') {
+        setLevelStates(prev => ({ ...prev, predator: STATES.CALM }));
+      }
+      if (e.key === '2') {
+        setLevelStates(prev => ({ ...prev, predator: STATES.EXCITED }));
+      }
+      if (e.key === '3') {
+        setLevelStates(prev => ({ ...prev, heart: STATES.RECOVERING }));
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, []);
+  }, [levelStates]);
 
   // ============================================================================
   // RENDER
@@ -777,9 +699,8 @@ const App = () => {
       }}>
         {shapeConfigs.map((config) => {
           const section = videoSections.find(s => s.id === config.id);
-          const currentState = levelStates[section.id] || STATES.NORMAL;
-          const transition = transitioningLevels[section.id];
-          const isDead = currentState === STATES.DEAD;
+          const currentState = levelStates[section.id] || STATES.CALM;
+          const isRecovering = currentState === STATES.RECOVERING;
 
           return (
             <div key={section.id} style={{
@@ -788,13 +709,13 @@ const App = () => {
             }}>
               {/* Preload all 3 videos per level, toggle visibility for seamless transitions */}
               {Object.values(STATES).map(state => {
-                const videoPath = getVideoPath(section.id, state, false);
+                const videoPath = getVideoPath(section.id, state);
                 const isVisible = state === currentState;
-                const shouldLoop = !transition && state !== STATES.DEAD;
 
                 return (
                   <video
                     key={`${section.id}-${state}`}
+                    data-video-id={`${section.id}-${state}`}
                     style={{
                       position: 'absolute',
                       top: 0,
@@ -803,18 +724,18 @@ const App = () => {
                       height: '100%',
                       objectFit: 'cover',
                       clipPath: `url(#${config.clipPath})`,
-                      filter: state === STATES.DEAD ? 'grayscale(100%) contrast(0.5) brightness(0.3)' : 'grayscale(100%) contrast(1.2)',
+                      filter: 'grayscale(100%) contrast(1.2)',
                       mixBlendMode: 'screen',
                       opacity: isVisible ? 1 : 0,
                       transition: 'opacity 0.3s ease-in-out',
                       pointerEvents: isVisible ? 'auto' : 'none'
                     }}
                     src={videoPath}
-                    autoPlay={isVisible}
-                    loop={shouldLoop}
+                    loop
                     muted
                     playsInline
-                    preload="auto"
+                    autoPlay={isVisible}
+                    preload={isVisible ? "auto" : "metadata"}
                   />
                 );
               })}
@@ -845,13 +766,13 @@ const App = () => {
                       padding: '2px 8px',
                       borderRadius: '4px',
                       display: 'inline-block',
-                      backgroundColor: currentState === STATES.DEAD ? tweaks.stateBadges.dead.background :
-                        currentState === STATES.EXCITED ? tweaks.stateBadges.excited.background : tweaks.stateBadges.normal.background,
-                      color: currentState === STATES.DEAD ? tweaks.stateBadges.dead.text :
-                        currentState === STATES.EXCITED ? tweaks.stateBadges.excited.text : tweaks.stateBadges.normal.text,
+                      backgroundColor: currentState === STATES.RECOVERING ? tweaks.stateBadges.recovering.background :
+                        currentState === STATES.EXCITED ? tweaks.stateBadges.excited.background : tweaks.stateBadges.calm.background,
+                      color: currentState === STATES.RECOVERING ? tweaks.stateBadges.recovering.text :
+                        currentState === STATES.EXCITED ? tweaks.stateBadges.excited.text : tweaks.stateBadges.calm.text,
                       fontSize: tweaks.fonts.stateBadge
                     }}>
-                      {transition ? '→ TRANSITION' : currentState}
+                      {currentState}
                     </div>
                   </div>
                 )}
@@ -898,7 +819,7 @@ const App = () => {
                           width: tweaks.bars.width === 'auto' ? 'auto' : tweaks.bars.width,
                           minWidth: tweaks.bars.width === 'auto' ? '200px' : 'auto'
                         }}>
-                          {renderBar(width, isDead)}
+                          {renderBar(width, isRecovering)}
                         </div>
 
                         {/* Debug: Show value if debug mode is on */}
@@ -969,7 +890,7 @@ const App = () => {
             {Object.entries(levelStates).map(([level, state]) => (
               <div key={level} className="flex items-center justify-between text-[10px]">
                 <span className="text-gray-500 uppercase">{level}:</span>
-                <span className={`px-2 py-0.5 rounded ${state === STATES.DEAD ? 'bg-gray-700 text-gray-400' :
+                <span className={`px-2 py-0.5 rounded ${state === STATES.RECOVERING ? 'bg-gray-700 text-gray-400' :
                   state === STATES.EXCITED ? 'bg-red-600 text-white' : 'bg-blue-600 text-white'
                   }`}>
                   {state}
@@ -983,8 +904,9 @@ const App = () => {
       {/* Instructions (only in debug mode) */}
       {debugMode && (
         <div className="fixed bottom-4 left-4 text-gray-700 text-xs space-y-1">
-          <div>Press SPACE to activate predator | D for debug | ESC to exit</div>
-          <div>Press 1: Reset to NORMAL | 2: All EXCITED | 3: Kill heart</div>
+          <div>Press SPACE to trigger sequence (CALM → EXCITED → RECOVERING → CALM)</div>
+          <div>Press D for debug | ESC to exit</div>
+          <div>Debug: 1: Predator CALM | 2: Predator EXCITED | 3: Heart RECOVERING</div>
         </div>
       )}
     </div>
