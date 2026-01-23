@@ -551,8 +551,84 @@ const App = () => {
 
 
   // ============================================================================
+  // VIDEO PRELOAD MONITORING
+  // ============================================================================
+
+  useEffect(() => {
+    // Monitor video preload status
+    const videoElements = document.querySelectorAll('video[data-video-id]');
+    let loadedCount = 0;
+    const totalVideos = videoElements.length;
+
+    const checkLoadStatus = (video) => {
+      const videoId = video.getAttribute('data-video-id');
+
+      const handleLoadedData = () => {
+        loadedCount++;
+        console.log(`✅ Video loaded (${loadedCount}/${totalVideos}): ${videoId} - readyState: ${video.readyState}, buffered: ${video.buffered.length > 0 ? video.buffered.end(0).toFixed(1) + 's' : '0s'}, duration: ${video.duration.toFixed(1)}s`);
+
+        if (loadedCount === totalVideos) {
+          console.log(`🎉 ALL ${totalVideos} VIDEOS FULLY LOADED INTO MEMORY`);
+        }
+      };
+
+      const handleProgress = () => {
+        if (video.buffered.length > 0) {
+          const bufferedEnd = video.buffered.end(video.buffered.length - 1);
+          const duration = video.duration;
+          const percentBuffered = (bufferedEnd / duration * 100).toFixed(1);
+          console.log(`⏳ Buffering ${videoId}: ${percentBuffered}% (${bufferedEnd.toFixed(1)}s / ${duration.toFixed(1)}s)`);
+        }
+      };
+
+      const handleSeeking = () => {
+        console.warn(`⚠️ SEEKING detected on ${videoId} - this may trigger new network requests!`);
+      };
+
+      const handleSeeked = () => {
+        console.log(`✓ Seeked ${videoId} to ${video.currentTime.toFixed(1)}s`);
+      };
+
+      video.addEventListener('loadeddata', handleLoadedData, { once: true });
+      video.addEventListener('progress', handleProgress);
+      video.addEventListener('seeking', handleSeeking);
+      video.addEventListener('seeked', handleSeeked);
+
+      // Check if already loaded
+      if (video.readyState >= 3) {
+        handleLoadedData();
+      }
+    };
+
+    videoElements.forEach(checkLoadStatus);
+  }, []);
+
+  // ============================================================================
   // VIDEO PLAYBACK MANAGEMENT
   // ============================================================================
+
+  useEffect(() => {
+    // Manual loop implementation without seeking (avoids network requests)
+    const handleVideoEnded = (e) => {
+      const video = e.target;
+      // When video ends, just play again - browser will restart from beginning
+      // without triggering a seek event
+      video.play().catch(err => console.warn('Loop play failed:', err));
+    };
+
+    // Attach ended event listeners to all videos
+    const videoElements = document.querySelectorAll('video[data-video-id]');
+    videoElements.forEach(video => {
+      video.addEventListener('ended', handleVideoEnded);
+    });
+
+    // Cleanup
+    return () => {
+      videoElements.forEach(video => {
+        video.removeEventListener('ended', handleVideoEnded);
+      });
+    };
+  }, []);
 
   useEffect(() => {
     // When state changes, play the visible video and pause hidden ones
@@ -564,12 +640,12 @@ const App = () => {
         if (videoElement) {
           if (state === currentState) {
             // This video should be visible and playing
-            videoElement.currentTime = 0;
+            // CRITICAL: Never seek! Just play from wherever it is
             videoElement.play().catch(err => console.warn('Play failed:', err));
           } else {
             // This video should be hidden and paused
             videoElement.pause();
-            videoElement.currentTime = 0;
+            // CRITICAL: Never seek paused videos - keeps them buffered without network requests
           }
         }
       });
@@ -707,7 +783,7 @@ const App = () => {
               position: 'absolute',
               ...config.style
             }}>
-              {/* Preload all 3 videos per level, toggle visibility for seamless transitions */}
+              {/* Load all videos but only play visible one */}
               {Object.values(STATES).map(state => {
                 const videoPath = getVideoPath(section.id, state);
                 const isVisible = state === currentState;
@@ -731,11 +807,9 @@ const App = () => {
                       pointerEvents: isVisible ? 'auto' : 'none'
                     }}
                     src={videoPath}
-                    loop
                     muted
                     playsInline
-                    autoPlay={isVisible}
-                    preload={isVisible ? "auto" : "metadata"}
+                    preload="auto"
                   />
                 );
               })}
