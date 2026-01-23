@@ -36,7 +36,7 @@ const TWEAKS = {
     borderRadius: '0px',
     backgroundColor: '#333',
     fillColor: '#aaa',
-    deadColor: '#666',
+    recoveringColor: '#666',
     borderWidth: '1px',
     segmentCount: 26,
     segmentGap: '4px',
@@ -50,7 +50,7 @@ const TWEAKS = {
     targetValueColor: '#eab308',
   },
   stateBadges: {
-    normal: {
+    calm: {
       background: '#2563eb',
       text: '#fff',
     },
@@ -58,7 +58,7 @@ const TWEAKS = {
       background: '#dc2626',
       text: '#fff',
     },
-    dead: {
+    recovering: {
       background: '#666',
       text: '#999',
     },
