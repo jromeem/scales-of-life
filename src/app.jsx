@@ -168,31 +168,36 @@ const videoSections = [
     id: 'predator',
     title: 'Predator',
     subtitle: 'Bird of Prey',
-    dataPoints: ['Blood Sugar', 'Speed', 'Reation Time', 'Sensory Confidence', 'Success Probability', 'Time to Strike']
+    dataPoints: ['Blood Sugar', 'Speed', 'Reation Time', 'Sensory Confidence', 'Success Probability', 'Time to Strike'],
+    scale: 'meter'
   },
   {
     id: 'flock',
     title: 'Flock',
     subtitle: 'Collective Behavior',
-    dataPoints: ['Group Kinetic Energy', 'Mean Inter-Individual Distance', 'Directional Alignment Variance', 'Obstacle Avoidance', 'Response Latency']
+    dataPoints: ['Group Kinetic Energy', 'Mean Inter-Individual Distance', 'Directional Alignment Variance', 'Obstacle Avoidance', 'Response Latency'],
+    scale: 'meter'
   },
   {
     id: 'individual',
     title: 'Individual',
     subtitle: 'Single Bird',
-    dataPoints: ['Metabolic Flux', 'Functional Output', 'Activation Timing', 'Mechanical Compliance', 'Structural Alignment', 'Signal Fidelity']
+    dataPoints: ['Metabolic Flux', 'Functional Output', 'Activation Timing', 'Mechanical Compliance', 'Structural Alignment', 'Signal Fidelity'],
+    scale: 'cm'
   },
   {
     id: 'muscle',
     title: 'Muscle',
     subtitle: 'Tissue Contraction',
-    dataPoints: ['Cross-bridge Turnover', 'ATP Consumption', 'Extent of Reaction', 'Molecular Fatigue', 'External Load', 'Activation']
+    dataPoints: ['Cross-bridge Turnover', 'ATP Consumption', 'Extent of Reaction', 'Molecular Fatigue', 'External Load', 'Activation'],
+    scale: 'nm'
   },
   {
     id: 'microscopic',
     title: 'Microscopic',
     subtitle: 'Molecular Activity',
-    dataPoints: ['Force Production', 'Control Signal', 'Stiffness', 'Entropy']
+    dataPoints: ['Force Production', 'Control Signal', 'Stiffness', 'Entropy'],
+    scale: 'μm'
   }
 ];
 
@@ -877,7 +882,6 @@ const App = () => {
                           textAlign: 'right',
                           fontSize: tweaks.fonts.dataPointLabel,
                           color: tweaks.colors.labelColor,
-                          textTransform: 'uppercase',
                           flexShrink: 0
                         }}>
                           {dataPoint}
@@ -915,6 +919,25 @@ const App = () => {
                       </div>
                     );
                   })}
+
+                  {/* Scale text - aligned with data labels */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: tweaks.overlay.labelBarGap,
+                    marginTop: '12px'
+                  }}>
+                    {/* Scale label (right-aligned, same width as data labels) */}
+                    <div style={{
+                      width: tweaks.overlay.labelWidth,
+                      textAlign: 'right',
+                      fontSize: tweaks.fonts.dataPointLabel,
+                      color: tweaks.colors.labelColor,
+                      flexShrink: 0
+                    }}>
+                      [Scale: {section.scale}]
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

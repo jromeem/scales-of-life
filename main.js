@@ -16,7 +16,7 @@ let powerSaveBlockerId;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    fullscreen: true,
+    fullscreen: false,
     frame: true,
     backgroundColor: '#000000',
     webPreferences: {
