@@ -600,8 +600,122 @@ const App = () => {
   }, [levelStates]);
 
   // ============================================================================
+  // GAMEPAD/ARCADE BUTTON SUPPORT
+  // ============================================================================
+
+  useEffect(() => {
+    let previousButtonStates = {};
+    let animationId = null;
+    let isPolling = false;
+
+    const checkGamepadInput = () => {
+      const gamepads = navigator.getGamepads();
+
+      for (let i = 0; i < gamepads.length; i++) {
+        const gamepad = gamepads[i];
+        if (!gamepad) continue;
+
+        // Check Button 0 - your blue arcade button
+        const button0 = gamepad.buttons[0];
+        const buttonKey = `${i}-0`;
+
+        if (button0 && button0.pressed) {
+          // Button is pressed - check if this is a new press (not held)
+          if (!previousButtonStates[buttonKey]) {
+            triggerStateSequence();
+            previousButtonStates[buttonKey] = true;
+          }
+        } else {
+          // Button is released
+          previousButtonStates[buttonKey] = false;
+        }
+      }
+
+      if (isPolling) {
+        animationId = requestAnimationFrame(checkGamepadInput);
+      }
+    };
+
+    // Event handlers for gamepad connection
+    const handleGamepadConnected = (e) => {
+      if (!isPolling) {
+        isPolling = true;
+        animationId = requestAnimationFrame(checkGamepadInput);
+      }
+    };
+
+    const handleGamepadDisconnected = (e) => {
+      // Check if any gamepads are still connected
+      const gamepads = navigator.getGamepads();
+      const hasGamepads = Array.from(gamepads).some(gp => gp !== null);
+
+      if (!hasGamepads && isPolling) {
+        isPolling = false;
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+      }
+    };
+
+    // Add event listeners
+    window.addEventListener('gamepadconnected', handleGamepadConnected);
+    window.addEventListener('gamepaddisconnected', handleGamepadDisconnected);
+
+    // Check if gamepad is already connected (in case user already pressed a button)
+    const existingGamepads = navigator.getGamepads();
+    const hasExistingGamepads = Array.from(existingGamepads).some(gp => gp !== null);
+    if (hasExistingGamepads) {
+      isPolling = true;
+      animationId = requestAnimationFrame(checkGamepadInput);
+    }
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('gamepadconnected', handleGamepadConnected);
+      window.removeEventListener('gamepaddisconnected', handleGamepadDisconnected);
+      isPolling = false;
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+    };
+  }, [levelStates]);
+
+  // ============================================================================
   // KEYBOARD SHORTCUTS
   // ============================================================================
+
+  // Helper function to trigger the state sequence
+  const triggerStateSequence = () => {
+    // Check if all levels are in CALM state
+    const allCalm = Object.values(levelStates).every(state => state === STATES.CALM);
+
+    if (allCalm) {
+      // Transition all levels to EXCITED
+      const newStates = {};
+      LEVELS.forEach(level => {
+        newStates[level] = STATES.EXCITED;
+      });
+      setLevelStates(newStates);
+
+      // After 10 seconds, transition to RECOVERING
+      setTimeout(() => {
+        const recoveringStates = {};
+        LEVELS.forEach(level => {
+          recoveringStates[level] = STATES.RECOVERING;
+        });
+        setLevelStates(recoveringStates);
+
+        // After another 10 seconds, return to CALM
+        setTimeout(() => {
+          const calmStates = {};
+          LEVELS.forEach(level => {
+            calmStates[level] = STATES.CALM;
+          });
+          setLevelStates(calmStates);
+        }, 10000);
+      }, 10000);
+    }
+  };
 
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -613,36 +727,7 @@ const App = () => {
       // Spacebar: Trigger state sequence for all levels (CALM → EXCITED → RECOVERING → CALM)
       if (e.key === ' ') {
         e.preventDefault();
-
-        // Check if all levels are in CALM state
-        const allCalm = Object.values(levelStates).every(state => state === STATES.CALM);
-
-        if (allCalm) {
-          // Transition all levels to EXCITED
-          const newStates = {};
-          LEVELS.forEach(level => {
-            newStates[level] = STATES.EXCITED;
-          });
-          setLevelStates(newStates);
-
-          // After 10 seconds, transition to RECOVERING
-          setTimeout(() => {
-            const recoveringStates = {};
-            LEVELS.forEach(level => {
-              recoveringStates[level] = STATES.RECOVERING;
-            });
-            setLevelStates(recoveringStates);
-
-            // After another 10 seconds, return to CALM
-            setTimeout(() => {
-              const calmStates = {};
-              LEVELS.forEach(level => {
-                calmStates[level] = STATES.CALM;
-              });
-              setLevelStates(calmStates);
-            }, 10000);
-          }, 10000);
-        }
+        triggerStateSequence();
       }
 
       // Debug: Force states (for testing)
