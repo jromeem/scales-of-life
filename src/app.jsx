@@ -605,11 +605,18 @@ const App = () => {
 
   useEffect(() => {
     let previousButtonStates = {};
+    let buttonPressTime = {};
+    let lastTriggerTime = 0;
     let animationId = null;
     let isPolling = false;
 
+    const COOLDOWN_MS = 1000; // 1 second cooldown between triggers
+    const MIN_PRESS_DURATION_MS = 50; // Button must be pressed for at least 50ms
+    const ANALOG_THRESHOLD = 0.5; // Analog button threshold
+
     const checkGamepadInput = () => {
       const gamepads = navigator.getGamepads();
+      const currentTime = performance.now();
 
       for (let i = 0; i < gamepads.length; i++) {
         const gamepad = gamepads[i];
@@ -619,15 +626,33 @@ const App = () => {
         const button0 = gamepad.buttons[0];
         const buttonKey = `${i}-0`;
 
-        if (button0 && button0.pressed) {
-          // Button is pressed - check if this is a new press (not held)
+        // Check if button is pressed (handle both digital and analog buttons)
+        const isPressed = button0.pressed || button0.value > ANALOG_THRESHOLD;
+
+        if (isPressed) {
+          // Button is currently pressed
           if (!previousButtonStates[buttonKey]) {
-            triggerStateSequence();
+            // New press detected - record the time
+            buttonPressTime[buttonKey] = currentTime;
             previousButtonStates[buttonKey] = true;
           }
         } else {
           // Button is released
+          if (previousButtonStates[buttonKey]) {
+            // Button was just released - check if it was a valid press
+            const pressDuration = currentTime - buttonPressTime[buttonKey];
+            const timeSinceLastTrigger = currentTime - lastTriggerTime;
+
+            // Only trigger if:
+            // 1. Press duration is long enough (filters noise)
+            // 2. Enough time has passed since last trigger (cooldown)
+            if (pressDuration >= MIN_PRESS_DURATION_MS && timeSinceLastTrigger >= COOLDOWN_MS) {
+              triggerStateSequence();
+              lastTriggerTime = currentTime;
+            }
+          }
           previousButtonStates[buttonKey] = false;
+          buttonPressTime[buttonKey] = 0;
         }
       }
 
