@@ -600,8 +600,147 @@ const App = () => {
   }, [levelStates]);
 
   // ============================================================================
+  // GAMEPAD/ARCADE BUTTON SUPPORT
+  // ============================================================================
+
+  useEffect(() => {
+    let previousButtonStates = {};
+    let buttonPressTime = {};
+    let lastTriggerTime = 0;
+    let animationId = null;
+    let isPolling = false;
+
+    const COOLDOWN_MS = 1000; // 1 second cooldown between triggers
+    const MIN_PRESS_DURATION_MS = 50; // Button must be pressed for at least 50ms
+    const ANALOG_THRESHOLD = 0.5; // Analog button threshold
+
+    const checkGamepadInput = () => {
+      const gamepads = navigator.getGamepads();
+      const currentTime = performance.now();
+
+      for (let i = 0; i < gamepads.length; i++) {
+        const gamepad = gamepads[i];
+        if (!gamepad) continue;
+
+        // Check Button 0 - your blue arcade button
+        const button0 = gamepad.buttons[0];
+        const buttonKey = `${i}-0`;
+
+        // Check if button is pressed (handle both digital and analog buttons)
+        const isPressed = button0.pressed || button0.value > ANALOG_THRESHOLD;
+
+        if (isPressed) {
+          // Button is currently pressed
+          if (!previousButtonStates[buttonKey]) {
+            // New press detected - record the time
+            buttonPressTime[buttonKey] = currentTime;
+            previousButtonStates[buttonKey] = true;
+          }
+        } else {
+          // Button is released
+          if (previousButtonStates[buttonKey]) {
+            // Button was just released - check if it was a valid press
+            const pressDuration = currentTime - buttonPressTime[buttonKey];
+            const timeSinceLastTrigger = currentTime - lastTriggerTime;
+
+            // Only trigger if:
+            // 1. Press duration is long enough (filters noise)
+            // 2. Enough time has passed since last trigger (cooldown)
+            if (pressDuration >= MIN_PRESS_DURATION_MS && timeSinceLastTrigger >= COOLDOWN_MS) {
+              triggerStateSequence();
+              lastTriggerTime = currentTime;
+            }
+          }
+          previousButtonStates[buttonKey] = false;
+          buttonPressTime[buttonKey] = 0;
+        }
+      }
+
+      if (isPolling) {
+        animationId = requestAnimationFrame(checkGamepadInput);
+      }
+    };
+
+    // Event handlers for gamepad connection
+    const handleGamepadConnected = (e) => {
+      if (!isPolling) {
+        isPolling = true;
+        animationId = requestAnimationFrame(checkGamepadInput);
+      }
+    };
+
+    const handleGamepadDisconnected = (e) => {
+      // Check if any gamepads are still connected
+      const gamepads = navigator.getGamepads();
+      const hasGamepads = Array.from(gamepads).some(gp => gp !== null);
+
+      if (!hasGamepads && isPolling) {
+        isPolling = false;
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+      }
+    };
+
+    // Add event listeners
+    window.addEventListener('gamepadconnected', handleGamepadConnected);
+    window.addEventListener('gamepaddisconnected', handleGamepadDisconnected);
+
+    // Check if gamepad is already connected (in case user already pressed a button)
+    const existingGamepads = navigator.getGamepads();
+    const hasExistingGamepads = Array.from(existingGamepads).some(gp => gp !== null);
+    if (hasExistingGamepads) {
+      isPolling = true;
+      animationId = requestAnimationFrame(checkGamepadInput);
+    }
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('gamepadconnected', handleGamepadConnected);
+      window.removeEventListener('gamepaddisconnected', handleGamepadDisconnected);
+      isPolling = false;
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+    };
+  }, [levelStates]);
+
+  // ============================================================================
   // KEYBOARD SHORTCUTS
   // ============================================================================
+
+  // Helper function to trigger the state sequence
+  const triggerStateSequence = () => {
+    // Check if all levels are in CALM state
+    const allCalm = Object.values(levelStates).every(state => state === STATES.CALM);
+
+    if (allCalm) {
+      // Transition all levels to EXCITED
+      const newStates = {};
+      LEVELS.forEach(level => {
+        newStates[level] = STATES.EXCITED;
+      });
+      setLevelStates(newStates);
+
+      // After 10 seconds, transition to RECOVERING
+      setTimeout(() => {
+        const recoveringStates = {};
+        LEVELS.forEach(level => {
+          recoveringStates[level] = STATES.RECOVERING;
+        });
+        setLevelStates(recoveringStates);
+
+        // After another 10 seconds, return to CALM
+        setTimeout(() => {
+          const calmStates = {};
+          LEVELS.forEach(level => {
+            calmStates[level] = STATES.CALM;
+          });
+          setLevelStates(calmStates);
+        }, 10000);
+      }, 10000);
+    }
+  };
 
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -613,36 +752,7 @@ const App = () => {
       // Spacebar: Trigger state sequence for all levels (CALM → EXCITED → RECOVERING → CALM)
       if (e.key === ' ') {
         e.preventDefault();
-
-        // Check if all levels are in CALM state
-        const allCalm = Object.values(levelStates).every(state => state === STATES.CALM);
-
-        if (allCalm) {
-          // Transition all levels to EXCITED
-          const newStates = {};
-          LEVELS.forEach(level => {
-            newStates[level] = STATES.EXCITED;
-          });
-          setLevelStates(newStates);
-
-          // After 10 seconds, transition to RECOVERING
-          setTimeout(() => {
-            const recoveringStates = {};
-            LEVELS.forEach(level => {
-              recoveringStates[level] = STATES.RECOVERING;
-            });
-            setLevelStates(recoveringStates);
-
-            // After another 10 seconds, return to CALM
-            setTimeout(() => {
-              const calmStates = {};
-              LEVELS.forEach(level => {
-                calmStates[level] = STATES.CALM;
-              });
-              setLevelStates(calmStates);
-            }, 10000);
-          }, 10000);
-        }
+        triggerStateSequence();
       }
 
       // Debug: Force states (for testing)
