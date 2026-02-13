@@ -98,14 +98,14 @@ const videoSections = [
     id: 'swarm',
     title: 'Swarm',
     subtitle: 'Microtubule Swarms',
-    dataPoints: ['Force Production', 'Control Signal', 'Stiffness', 'Entropy'],
+    dataPoints: ['Force Production', 'Control Signal', 'Compliance', 'Configurational Entropy'],
     scale: 'μm'
   },
   {
     id: 'myosin',
     title: 'Myosin',
     subtitle: 'Myosin Motors',
-    dataPoints: ['Cross-bridge Turnover', 'ATP Consumption', 'Extent of Reaction', 'Molecular Fatigue', 'External Load', 'Activation'],
+    dataPoints: ['Cross-bridge Turnover', 'ATP Regeneration', 'Extent of Reaction', 'Molecular Fatigue', 'External Load', 'Susceptibility'],
     scale: 'nm'
   }
 ];
