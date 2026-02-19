@@ -52,9 +52,9 @@ const initialTweaks = typeof TWEAKS !== 'undefined' ? TWEAKS : {
 // ============================================================================
 
 const STATES = {
-  CALM: 'CALM',
-  EXCITED: 'EXCITED',
-  RECOVERING: 'RECOVERING'
+  REST: 'REST',
+  ACTIVE: 'ACTIVE',
+  RECOVER: 'RECOVER'
 };
 
 const LEVELS = ['predator', 'flock', 'heart', 'swarm', 'myosin'];
@@ -170,13 +170,13 @@ const App = () => {
 
   // Get video path based on state
   const getVideoPath = (levelId, state) => {
-    const stateFile = (state || STATES.CALM).toLowerCase();
+    const stateFile = (state || STATES.REST).toLowerCase();
     return `videos/${levelId}/${stateFile}.mp4`;
   };
 
   // Render bar based on selected style
   const renderBar = (width, isRecovering) => {
-    const fillColor = isRecovering ? tweaks.bars.recoveringColor : tweaks.bars.fillColor;
+    const fillColor = isRecovering ? tweaks.bars.recoverColor : tweaks.bars.fillColor;
     const bgColor = tweaks.bars.backgroundColor;
     const barHeight = tweaks.bars.height;
     const borderRadius = tweaks.bars.borderRadius;
@@ -341,8 +341,8 @@ const App = () => {
         // Random lerp rate between 0.02 and 0.3
         initialRates[key] = 0.02 + Math.random() * 0.28;
       });
-      // Initialize all levels to CALM state
-      initialStates[section.id] = STATES.CALM;
+      // Initialize all levels to REST state
+      initialStates[section.id] = STATES.REST;
     });
 
     setDataValues(initialValues);
@@ -610,36 +610,36 @@ const App = () => {
         setDebugMode(prev => !prev);
       }
 
-      // Spacebar: Trigger state sequence for all levels (CALM → EXCITED → RECOVERING → CALM)
+      // Spacebar: Trigger state sequence for all levels (REST → ACTIVE → RECOVER → REST)
       if (e.key === ' ') {
         e.preventDefault();
 
-        // Check if all levels are in CALM state
-        const allCalm = Object.values(levelStates).every(state => state === STATES.CALM);
+        // Check if all levels are in REST state
+        const allRest = Object.values(levelStates).every(state => state === STATES.REST);
 
-        if (allCalm) {
-          // Transition all levels to EXCITED
+        if (allRest) {
+          // Transition all levels to ACTIVE
           const newStates = {};
           LEVELS.forEach(level => {
-            newStates[level] = STATES.EXCITED;
+            newStates[level] = STATES.ACTIVE;
           });
           setLevelStates(newStates);
 
-          // After 10 seconds, transition to RECOVERING
+          // After 10 seconds, transition to RECOVER
           setTimeout(() => {
-            const recoveringStates = {};
+            const recoverStates = {};
             LEVELS.forEach(level => {
-              recoveringStates[level] = STATES.RECOVERING;
+              recoverStates[level] = STATES.RECOVER;
             });
-            setLevelStates(recoveringStates);
+            setLevelStates(recoverStates);
 
-            // After another 10 seconds, return to CALM
+            // After another 10 seconds, return to REST
             setTimeout(() => {
-              const calmStates = {};
+              const restStates = {};
               LEVELS.forEach(level => {
-                calmStates[level] = STATES.CALM;
+                restStates[level] = STATES.REST;
               });
-              setLevelStates(calmStates);
+              setLevelStates(restStates);
             }, 10000);
           }, 10000);
         }
@@ -647,13 +647,13 @@ const App = () => {
 
       // Debug: Force states (for testing)
       if (e.key === '1') {
-        setLevelStates(prev => ({ ...prev, predator: STATES.CALM }));
+        setLevelStates(prev => ({ ...prev, predator: STATES.REST }));
       }
       if (e.key === '2') {
-        setLevelStates(prev => ({ ...prev, predator: STATES.EXCITED }));
+        setLevelStates(prev => ({ ...prev, predator: STATES.ACTIVE }));
       }
       if (e.key === '3') {
-        setLevelStates(prev => ({ ...prev, heart: STATES.RECOVERING }));
+        setLevelStates(prev => ({ ...prev, heart: STATES.RECOVER }));
       }
     };
 
@@ -722,8 +722,8 @@ const App = () => {
       }}>
         {shapeConfigs.map((config) => {
           const section = videoSections.find(s => s.id === config.id);
-          const currentState = levelStates[section.id] || STATES.CALM;
-          const isRecovering = currentState === STATES.RECOVERING;
+          const currentState = levelStates[section.id] || STATES.REST;
+          const isRecovering = currentState === STATES.RECOVER;
 
           return (
             <div key={section.id} style={{
@@ -787,10 +787,10 @@ const App = () => {
                       padding: '2px 8px',
                       borderRadius: '4px',
                       display: 'inline-block',
-                      backgroundColor: currentState === STATES.RECOVERING ? tweaks.stateBadges.recovering.background :
-                        currentState === STATES.EXCITED ? tweaks.stateBadges.excited.background : tweaks.stateBadges.calm.background,
-                      color: currentState === STATES.RECOVERING ? tweaks.stateBadges.recovering.text :
-                        currentState === STATES.EXCITED ? tweaks.stateBadges.excited.text : tweaks.stateBadges.calm.text,
+                      backgroundColor: currentState === STATES.RECOVER ? tweaks.stateBadges.recover.background :
+                        currentState === STATES.ACTIVE ? tweaks.stateBadges.active.background : tweaks.stateBadges.rest.background,
+                      color: currentState === STATES.RECOVER ? tweaks.stateBadges.recover.text :
+                        currentState === STATES.ACTIVE ? tweaks.stateBadges.active.text : tweaks.stateBadges.rest.text,
                       fontSize: tweaks.fonts.stateBadge
                     }}>
                       {currentState}
@@ -911,8 +911,8 @@ const App = () => {
             {Object.entries(levelStates).map(([level, state]) => (
               <div key={level} className="flex items-center justify-between text-[10px]">
                 <span className="text-gray-500 uppercase">{level}:</span>
-                <span className={`px-2 py-0.5 rounded ${state === STATES.RECOVERING ? 'bg-gray-700 text-gray-400' :
-                  state === STATES.EXCITED ? 'bg-red-600 text-white' : 'bg-blue-600 text-white'
+                <span className={`px-2 py-0.5 rounded ${state === STATES.RECOVER ? 'bg-gray-700 text-gray-400' :
+                  state === STATES.ACTIVE ? 'bg-red-600 text-white' : 'bg-blue-600 text-white'
                   }`}>
                   {state}
                 </span>
@@ -925,9 +925,9 @@ const App = () => {
       {/* Instructions (only in debug mode) */}
       {debugMode && (
         <div className="fixed bottom-4 left-4 text-gray-700 text-xs space-y-1">
-          <div>Press SPACE to trigger sequence (CALM → EXCITED → RECOVERING → CALM)</div>
+          <div>Press SPACE to trigger sequence (REST → ACTIVE → RECOVER → REST)</div>
           <div>Press D for debug | ESC to exit</div>
-          <div>Debug: 1: Predator CALM | 2: Predator EXCITED | 3: Heart RECOVERING</div>
+          <div>Debug: 1: Predator REST | 2: Predator ACTIVE | 3: Heart RECOVER</div>
         </div>
       )}
     </div>
