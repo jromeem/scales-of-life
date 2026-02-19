@@ -78,12 +78,12 @@ const videoSections = [
     title: 'Predator',
     subtitle: 'Bird of Prey',
     dataPoints: [
-      { id: 'bloodSugar', label: 'Blood Sugar', rest: 20, active: 80, recover: 40 },
-      { id: 'speed', label: 'Speed', rest: 10, active: 90, recover: 30 },
-      { id: 'reactionTime', label: 'Reation Time', rest: 30, active: 95, recover: 50 },
-      { id: 'sensoryConfidence', label: 'Sensory Confidence', rest: 40, active: 100, recover: 60 },
-      { id: 'successProbability', label: 'Success Probability', rest: 15, active: 85, recover: 35 },
-      { id: 'timeToStrike', label: 'Time to Strike', rest: 25, active: 90, recover: 45 }
+      { id: 'bloodSugar', label: 'Blood Sugar', rest: 20, active: 80, recover: 40, decay: 0.3, randomness: 0.08 },
+      { id: 'speed', label: 'Speed', rest: 10, active: 90, recover: 30, decay: 0.5, randomness: 0.12 },
+      { id: 'reactionTime', label: 'Reation Time', rest: 30, active: 95, recover: 50, decay: 0.6, randomness: 0.15 },
+      { id: 'sensoryConfidence', label: 'Sensory Confidence', rest: 40, active: 100, recover: 60, decay: 0.4, randomness: 0.1 },
+      { id: 'successProbability', label: 'Success Probability', rest: 15, active: 85, recover: 35, decay: 0.2, randomness: 0.18 },
+      { id: 'timeToStrike', label: 'Time to Strike', rest: 25, active: 90, recover: 45, decay: 0.7, randomness: 0.2 }
     ],
     scale: 'meter'
   },
@@ -92,11 +92,11 @@ const videoSections = [
     title: 'Flock',
     subtitle: 'Collective Behavior',
     dataPoints: [
-      { id: 'groupKineticEnergy', label: 'Group Kinetic Energy', rest: 10, active: 95, recover: 40 },
-      { id: 'meanInterIndividualDistance', label: 'Mean Inter-Individual Distance', rest: 60, active: 20, recover: 45 },
-      { id: 'directionalAlignmentVariance', label: 'Directional Alignment Variance', rest: 70, active: 15, recover: 50 },
-      { id: 'obstacleAvoidance', label: 'Obstacle Avoidance', rest: 30, active: 90, recover: 55 },
-      { id: 'responseLatency', label: 'Response Latency', rest: 80, active: 10, recover: 40 }
+      { id: 'groupKineticEnergy', label: 'Group Kinetic Energy', rest: 10, active: 95, recover: 40, decay: 0.4, randomness: 0.15 },
+      { id: 'meanInterIndividualDistance', label: 'Mean Inter-Individual Distance', rest: 60, active: 20, recover: 45, decay: 0.3, randomness: 0.12 },
+      { id: 'directionalAlignmentVariance', label: 'Directional Alignment Variance', rest: 70, active: 15, recover: 50, decay: 0.5, randomness: 0.1 },
+      { id: 'obstacleAvoidance', label: 'Obstacle Avoidance', rest: 30, active: 90, recover: 55, decay: 0.6, randomness: 0.18 },
+      { id: 'responseLatency', label: 'Response Latency', rest: 80, active: 10, recover: 40, decay: 0.7, randomness: 0.2 }
     ],
     scale: 'meter'
   },
@@ -105,12 +105,12 @@ const videoSections = [
     title: 'Heart',
     subtitle: 'Heart Cells',
     dataPoints: [
-      { id: 'metabolicFlux', label: 'Metabolic Flux', rest: 20, active: 100, recover: 50 },
-      { id: 'functionalOutput', label: 'Functional Output', rest: 15, active: 95, recover: 45 },
-      { id: 'activationTiming', label: 'Activation Timing', rest: 10, active: 90, recover: 40 },
-      { id: 'mechanicalCompliance', label: 'Mechanical Compliance', rest: 25, active: 100, recover: 55 },
-      { id: 'structuralAlignment', label: 'Structural Alignment', rest: 30, active: 95, recover: 60 },
-      { id: 'signalFidelity', label: 'Signal Fidelity', rest: 20, active: 100, recover: 50 }
+      { id: 'metabolicFlux', label: 'Metabolic Flux', rest: 20, active: 100, recover: 50, decay: 0.5, randomness: 0.1 },
+      { id: 'functionalOutput', label: 'Functional Output', rest: 15, active: 95, recover: 45, decay: 0.6, randomness: 0.08 },
+      { id: 'activationTiming', label: 'Activation Timing', rest: 10, active: 90, recover: 40, decay: 0.8, randomness: 0.15 },
+      { id: 'mechanicalCompliance', label: 'Mechanical Compliance', rest: 25, active: 100, recover: 55, decay: 0.4, randomness: 0.12 },
+      { id: 'structuralAlignment', label: 'Structural Alignment', rest: 30, active: 95, recover: 60, decay: 0.3, randomness: 0.1 },
+      { id: 'signalFidelity', label: 'Signal Fidelity', rest: 20, active: 100, recover: 50, decay: 0.5, randomness: 0.18 }
     ],
     scale: 'cm'
   },
@@ -119,10 +119,10 @@ const videoSections = [
     title: 'Swarm',
     subtitle: 'Microtubule Swarms',
     dataPoints: [
-      { id: 'forceProduction', label: 'Force Production', rest: 15, active: 95, recover: 40 },
-      { id: 'controlSignal', label: 'Control Signal', rest: 20, active: 100, recover: 50 },
-      { id: 'compliance', label: 'Compliance', rest: 40, active: 80, recover: 60 },
-      { id: 'configurationalEntropy', label: 'Configurational Entropy', rest: 70, active: 20, recover: 45 }
+      { id: 'forceProduction', label: 'Force Production', rest: 15, active: 95, recover: 40, decay: 0.6, randomness: 0.15 },
+      { id: 'controlSignal', label: 'Control Signal', rest: 20, active: 100, recover: 50, decay: 0.7, randomness: 0.12 },
+      { id: 'compliance', label: 'Compliance', rest: 40, active: 80, recover: 60, decay: 0.3, randomness: 0.08 },
+      { id: 'configurationalEntropy', label: 'Configurational Entropy', rest: 70, active: 20, recover: 45, decay: 0.4, randomness: 0.2 }
     ],
     scale: 'μm'
   },
@@ -131,12 +131,12 @@ const videoSections = [
     title: 'Myosin',
     subtitle: 'Myosin Motors',
     dataPoints: [
-      { id: 'crossbridgeTurnover', label: 'Cross-bridge Turnover', rest: 10, active: 100, recover: 40 },
-      { id: 'atpRegeneration', label: 'ATP Regeneration', rest: 30, active: 95, recover: 60 },
-      { id: 'extentOfReaction', label: 'Extent of Reaction', rest: 15, active: 90, recover: 45 },
-      { id: 'molecularFatigue', label: 'Molecular Fatigue', rest: 20, active: 85, recover: 70 },
-      { id: 'externalLoad', label: 'External Load', rest: 25, active: 100, recover: 50 },
-      { id: 'susceptibility', label: 'Susceptibility', rest: 40, active: 80, recover: 55 }
+      { id: 'crossbridgeTurnover', label: 'Cross-bridge Turnover', rest: 10, active: 100, recover: 40, decay: 0.8, randomness: 0.2 },
+      { id: 'atpRegeneration', label: 'ATP Regeneration', rest: 30, active: 95, recover: 60, decay: 0.5, randomness: 0.15 },
+      { id: 'extentOfReaction', label: 'Extent of Reaction', rest: 15, active: 90, recover: 45, decay: 0.6, randomness: 0.18 },
+      { id: 'molecularFatigue', label: 'Molecular Fatigue', rest: 20, active: 85, recover: 70, decay: 0.3, randomness: 0.1 },
+      { id: 'externalLoad', label: 'External Load', rest: 25, active: 100, recover: 50, decay: 0.7, randomness: 0.12 },
+      { id: 'susceptibility', label: 'Susceptibility', rest: 40, active: 80, recover: 55, decay: 0.4, randomness: 0.08 }
     ],
     scale: 'nm'
   }
@@ -560,7 +560,7 @@ const App = () => {
         fpsUpdateTime = currentTime;
       }
 
-      // Update data values with lerping
+      // Update data values with lerping, decay, and randomness
       setDataValues(prevValues => {
         const newValues = {};
 
@@ -571,8 +571,26 @@ const App = () => {
             const targetValue = targetValuesRef.current[key] || currentValue;
             const lerpRate = lerpRatesRef.current[key] || 0.1;
 
+            // Get decay and randomness parameters (default to 0 if not specified)
+            const decay = point.decay !== undefined ? point.decay : 0;
+            const randomness = point.randomness !== undefined ? point.randomness : 0;
+
+            // Apply randomness: fluctuation relative to 0-100 range
+            const randomFluctuation = (Math.random() - 0.5) * 2 * randomness * 100;
+
             // Lerp towards target value
-            const newValue = lerp(currentValue, targetValue, lerpRate);
+            let newValue = lerp(currentValue, targetValue, lerpRate);
+
+            // Apply randomness
+            newValue += randomFluctuation;
+
+            // Apply decay: pull toward target (decay closer to 1 = settles faster)
+            // This reduces the effect of randomness over time
+            newValue = lerp(newValue, targetValue, decay);
+
+            // Clamp to 0-100 range
+            newValue = Math.max(0, Math.min(100, newValue));
+
             newValues[key] = newValue.toFixed(1);
           });
         });
