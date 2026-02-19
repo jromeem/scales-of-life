@@ -207,8 +207,8 @@ const App = () => {
   };
 
   // Render bar based on selected style
-  const renderBar = (width, isRecovering) => {
-    const fillColor = isRecovering ? tweaks.bars.recoverColor : tweaks.bars.fillColor;
+  const renderBar = (width) => {
+    const fillColor = tweaks.bars.fillColor;
     const bgColor = tweaks.bars.backgroundColor;
     const barHeight = tweaks.bars.height;
     const borderRadius = tweaks.bars.borderRadius;
@@ -349,7 +349,7 @@ const App = () => {
         );
 
       default:
-        return renderBar.call(this, width, isDead);
+        return renderBar.call(this, width);
     }
   };
 
@@ -761,7 +761,6 @@ const App = () => {
         {shapeConfigs.map((config) => {
           const section = videoSections.find(s => s.id === config.id);
           const currentState = levelStates[section.id] || STATES.REST;
-          const isRecovering = currentState === STATES.RECOVER;
 
           return (
             <div key={section.id} style={{
@@ -878,7 +877,7 @@ const App = () => {
                           width: tweaks.bars.width === 'auto' ? 'auto' : tweaks.bars.width,
                           minWidth: tweaks.bars.width === 'auto' ? '200px' : 'auto'
                         }}>
-                          {renderBar(width, isRecovering)}
+                          {renderBar(width)}
                         </div>
 
                         {/* Debug: Show value if debug mode is on */}
