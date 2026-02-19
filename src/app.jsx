@@ -77,35 +77,67 @@ const videoSections = [
     id: 'predator',
     title: 'Predator',
     subtitle: 'Bird of Prey',
-    dataPoints: ['Blood Sugar', 'Speed', 'Reation Time', 'Sensory Confidence', 'Success Probability', 'Time to Strike'],
+    dataPoints: [
+      { id: 'bloodSugar', label: 'Blood Sugar', rest: 20, active: 80, recover: 40 },
+      { id: 'speed', label: 'Speed', rest: 10, active: 90, recover: 30 },
+      { id: 'reactionTime', label: 'Reation Time', rest: 30, active: 95, recover: 50 },
+      { id: 'sensoryConfidence', label: 'Sensory Confidence', rest: 40, active: 100, recover: 60 },
+      { id: 'successProbability', label: 'Success Probability', rest: 15, active: 85, recover: 35 },
+      { id: 'timeToStrike', label: 'Time to Strike', rest: 25, active: 90, recover: 45 }
+    ],
     scale: 'meter'
   },
   {
     id: 'flock',
     title: 'Flock',
     subtitle: 'Collective Behavior',
-    dataPoints: ['Group Kinetic Energy', 'Mean Inter-Individual Distance', 'Directional Alignment Variance', 'Obstacle Avoidance', 'Response Latency'],
+    dataPoints: [
+      { id: 'groupKineticEnergy', label: 'Group Kinetic Energy', rest: 10, active: 95, recover: 40 },
+      { id: 'meanInterIndividualDistance', label: 'Mean Inter-Individual Distance', rest: 60, active: 20, recover: 45 },
+      { id: 'directionalAlignmentVariance', label: 'Directional Alignment Variance', rest: 70, active: 15, recover: 50 },
+      { id: 'obstacleAvoidance', label: 'Obstacle Avoidance', rest: 30, active: 90, recover: 55 },
+      { id: 'responseLatency', label: 'Response Latency', rest: 80, active: 10, recover: 40 }
+    ],
     scale: 'meter'
   },
   {
     id: 'heart',
     title: 'Heart',
     subtitle: 'Heart Cells',
-    dataPoints: ['Metabolic Flux', 'Functional Output', 'Activation Timing', 'Mechanical Compliance', 'Structural Alignment', 'Signal Fidelity'],
+    dataPoints: [
+      { id: 'metabolicFlux', label: 'Metabolic Flux', rest: 20, active: 100, recover: 50 },
+      { id: 'functionalOutput', label: 'Functional Output', rest: 15, active: 95, recover: 45 },
+      { id: 'activationTiming', label: 'Activation Timing', rest: 10, active: 90, recover: 40 },
+      { id: 'mechanicalCompliance', label: 'Mechanical Compliance', rest: 25, active: 100, recover: 55 },
+      { id: 'structuralAlignment', label: 'Structural Alignment', rest: 30, active: 95, recover: 60 },
+      { id: 'signalFidelity', label: 'Signal Fidelity', rest: 20, active: 100, recover: 50 }
+    ],
     scale: 'cm'
   },
   {
     id: 'swarm',
     title: 'Swarm',
     subtitle: 'Microtubule Swarms',
-    dataPoints: ['Force Production', 'Control Signal', 'Compliance', 'Configurational Entropy'],
+    dataPoints: [
+      { id: 'forceProduction', label: 'Force Production', rest: 15, active: 95, recover: 40 },
+      { id: 'controlSignal', label: 'Control Signal', rest: 20, active: 100, recover: 50 },
+      { id: 'compliance', label: 'Compliance', rest: 40, active: 80, recover: 60 },
+      { id: 'configurationalEntropy', label: 'Configurational Entropy', rest: 70, active: 20, recover: 45 }
+    ],
     scale: 'μm'
   },
   {
     id: 'myosin',
     title: 'Myosin',
     subtitle: 'Myosin Motors',
-    dataPoints: ['Cross-bridge Turnover', 'ATP Regeneration', 'Extent of Reaction', 'Molecular Fatigue', 'External Load', 'Susceptibility'],
+    dataPoints: [
+      { id: 'crossbridgeTurnover', label: 'Cross-bridge Turnover', rest: 10, active: 100, recover: 40 },
+      { id: 'atpRegeneration', label: 'ATP Regeneration', rest: 30, active: 95, recover: 60 },
+      { id: 'extentOfReaction', label: 'Extent of Reaction', rest: 15, active: 90, recover: 45 },
+      { id: 'molecularFatigue', label: 'Molecular Fatigue', rest: 20, active: 85, recover: 70 },
+      { id: 'externalLoad', label: 'External Load', rest: 25, active: 100, recover: 50 },
+      { id: 'susceptibility', label: 'Susceptibility', rest: 40, active: 80, recover: 55 }
+    ],
     scale: 'nm'
   }
 ];
@@ -334,10 +366,11 @@ const App = () => {
 
     videoSections.forEach(section => {
       section.dataPoints.forEach(point => {
-        const key = `${section.id}-${point}`;
-        const randomValue = Math.random() * 100;
-        initialValues[key] = randomValue.toFixed(1);
-        initialTargets[key] = randomValue;
+        const key = `${section.id}-${point.id}`;
+        // Initialize with the REST state value
+        const restValue = point.rest;
+        initialValues[key] = restValue.toFixed(1);
+        initialTargets[key] = restValue;
         // Random lerp rate between 0.02 and 0.3
         initialRates[key] = 0.02 + Math.random() * 0.28;
       });
@@ -485,22 +518,27 @@ const App = () => {
   }, []);
 
   // ============================================================================
-  // TARGET VALUE GENERATION
+  // TARGET VALUE GENERATION (STATE-BASED)
   // ============================================================================
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      videoSections.forEach(section => {
-        section.dataPoints.forEach(point => {
-          const key = `${section.id}-${point}`;
-          // Generate new random target value
-          targetValuesRef.current[key] = Math.random() * 100;
-        });
-      });
-    }, 800); // Generate new targets every 800ms
+    // When state changes, update target values for all data points
+    videoSections.forEach(section => {
+      const currentState = levelStates[section.id];
+      if (!currentState) return;
 
-    return () => clearInterval(interval);
-  }, []);
+      section.dataPoints.forEach(point => {
+        const key = `${section.id}-${point.id}`;
+        // Get the target value based on current state
+        const stateKey = currentState.toLowerCase(); // 'REST', 'ACTIVE', or 'RECOVER' -> 'rest', 'active', 'recover'
+        const targetValue = point[stateKey];
+
+        if (targetValue !== undefined) {
+          targetValuesRef.current[key] = targetValue;
+        }
+      });
+    });
+  }, [levelStates]); // Re-run when state changes
 
   // ============================================================================
   // ANIMATION LOOP (60fps)
@@ -528,7 +566,7 @@ const App = () => {
 
         videoSections.forEach(section => {
           section.dataPoints.forEach(point => {
-            const key = `${section.id}-${point}`;
+            const key = `${section.id}-${point.id}`;
             const currentValue = parseFloat(prevValues[key]) || 0;
             const targetValue = targetValuesRef.current[key] || currentValue;
             const lerpRate = lerpRatesRef.current[key] || 0.1;
@@ -801,7 +839,7 @@ const App = () => {
                 {/* Data points */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: parseFloat(tweaks.overlay.dataPointGap) >= 0 ? tweaks.overlay.dataPointGap : '0px' }}>
                   {section.dataPoints.map((dataPoint, dpIndex) => {
-                    const key = `${section.id}-${dataPoint}`;
+                    const key = `${section.id}-${dataPoint.id}`;
                     const value = dataValues[key] || '0.0';
                     const width = parseFloat(value);
                     const lerpRate = lerpRatesRef.current[key];
@@ -826,7 +864,7 @@ const App = () => {
                           color: tweaks.colors.labelColor,
                           flexShrink: 0
                         }}>
-                          {dataPoint}
+                          {dataPoint.label}
                           {debugMode && DEBUG_CONFIG.SHOW_LERP_RATES && lerpRate && (
                             <span style={{ color: tweaks.colors.lerpRateColor, marginLeft: '4px', fontSize: tweaks.fonts.lerpRate }}>
                               ({lerpRate.toFixed(2)})
