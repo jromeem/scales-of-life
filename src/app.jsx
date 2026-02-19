@@ -122,7 +122,7 @@ const videoSections = [
       { id: 'forceProduction', label: 'Force Production', rest: 15, active: 95, recover: 40, decay: 0.6, randomness: 0.15 },
       { id: 'controlSignal', label: 'Control Signal', rest: 20, active: 100, recover: 50, decay: 0.7, randomness: 0.12 },
       { id: 'compliance', label: 'Compliance', rest: 40, active: 80, recover: 60, decay: 0.3, randomness: 0.08 },
-      { id: 'configurationalEntropy', label: 'Configurational Entropy', rest: 70, active: 20, recover: 45, decay: 0.4, randomness: 0.2 }
+      { id: 'configurationalEntropy', label: 'Configurational Entropy', rest: 70, active: 20, recover: 45, decay: 0.4, randomness: 0.1 }
     ],
     scale: 'μm'
   },
@@ -131,7 +131,7 @@ const videoSections = [
     title: 'Myosin',
     subtitle: 'Myosin Motors',
     dataPoints: [
-      { id: 'crossbridgeTurnover', label: 'Cross-bridge Turnover', rest: 10, active: 100, recover: 40, decay: 0.8, randomness: 0.2 },
+      { id: 'crossbridgeTurnover', label: 'Cross-bridge Turnover', rest: 10, active: 100, recover: 40, decay: 0.1, randomness: 0.2 },
       { id: 'atpRegeneration', label: 'ATP Regeneration', rest: 30, active: 95, recover: 60, decay: 0.5, randomness: 0.15 },
       { id: 'extentOfReaction', label: 'Extent of Reaction', rest: 15, active: 90, recover: 45, decay: 0.6, randomness: 0.18 },
       { id: 'molecularFatigue', label: 'Molecular Fatigue', rest: 20, active: 85, recover: 70, decay: 0.3, randomness: 0.1 },
