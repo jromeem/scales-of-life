@@ -78,12 +78,12 @@ const videoSections = [
     title: 'Predator',
     subtitle: 'Bird of Prey',
     dataPoints: [
-      { id: 'bloodSugar', label: 'Blood Sugar', rest: 20, active: 80, recover: 40, decay: 0.3, randomness: 0.08 },
-      { id: 'speed', label: 'Speed', rest: 10, active: 90, recover: 30, decay: 0.5, randomness: 0.12 },
-      { id: 'reactionTime', label: 'Reation Time', rest: 30, active: 95, recover: 50, decay: 0.6, randomness: 0.15 },
-      { id: 'sensoryConfidence', label: 'Sensory Confidence', rest: 40, active: 100, recover: 60, decay: 0.4, randomness: 0.1 },
-      { id: 'successProbability', label: 'Success Probability', rest: 15, active: 85, recover: 35, decay: 0.2, randomness: 0.18 },
-      { id: 'timeToStrike', label: 'Time to Strike', rest: 25, active: 90, recover: 45, decay: 0.7, randomness: 0.2 }
+      { id: 'bloodSugar', label: 'Blood Sugar', rest: 17, active: 50, recover: 83, decay: 0.3, randomness: 0.08 },
+      { id: 'speed', label: 'Speed', rest: 15, active: 80, recover: 20, decay: 0.5, randomness: 0.12 },
+      { id: 'reactionTime', label: 'Reation Time', rest: 45, active: 75, recover: 25, decay: 0.6, randomness: 0.15 },
+      { id: 'sensoryConfidence', label: 'Sensory Confidence', rest: 55, active: 85, recover: 50, decay: 0.4, randomness: 0.1 },
+      { id: 'successProbability', label: 'Success Probability', rest: 20, active: 78, recover: 18, decay: 0.2, randomness: 0.18 },
+      { id: 'timeToStrike', label: 'Time to Strike', rest: 48, active: 82, recover: 22, decay: 0.7, randomness: 0.2 }
     ],
     scale: 'meter'
   },
@@ -92,11 +92,11 @@ const videoSections = [
     title: 'Flock',
     subtitle: 'Collective Behavior',
     dataPoints: [
-      { id: 'groupKineticEnergy', label: 'Group Kinetic Energy', rest: 10, active: 95, recover: 40, decay: 0.4, randomness: 0.15 },
-      { id: 'meanInterIndividualDistance', label: 'Mean Inter-Individual Distance', rest: 60, active: 20, recover: 45, decay: 0.3, randomness: 0.12 },
-      { id: 'directionalAlignmentVariance', label: 'Directional Alignment Variance', rest: 70, active: 15, recover: 50, decay: 0.5, randomness: 0.1 },
-      { id: 'obstacleAvoidance', label: 'Obstacle Avoidance', rest: 30, active: 90, recover: 55, decay: 0.6, randomness: 0.18 },
-      { id: 'responseLatency', label: 'Response Latency', rest: 80, active: 10, recover: 40, decay: 0.7, randomness: 0.2 }
+      { id: 'groupKineticEnergy', label: 'Group Kinetic Energy', rest: 52, active: 78, recover: 58, decay: 0.4, randomness: 0.15 },
+      { id: 'meanInterIndividualDistance', label: 'Mean Inter-Individual Distance', rest: 47, active: 70, recover: 80, decay: 0.3, randomness: 0.12 },
+      { id: 'directionalAlignmentVariance', label: 'Directional Alignment Variance', rest: 75, active: 22, recover: 72, decay: 0.5, randomness: 0.1 },
+      { id: 'obstacleAvoidance', label: 'Obstacle Avoidance', rest: 82, active: 55, recover: 60, decay: 0.6, randomness: 0.18 },
+      { id: 'responseLatency', label: 'Response Latency', rest: 44, active: 18, recover: 77, decay: 0.7, randomness: 0.2 }
     ],
     scale: 'meter'
   },
@@ -105,12 +105,12 @@ const videoSections = [
     title: 'Heart',
     subtitle: 'Heart Cells',
     dataPoints: [
-      { id: 'metabolicFlux', label: 'Metabolic Flux', rest: 20, active: 100, recover: 50, decay: 0.5, randomness: 0.1 },
-      { id: 'functionalOutput', label: 'Functional Output', rest: 15, active: 95, recover: 45, decay: 0.6, randomness: 0.08 },
-      { id: 'activationTiming', label: 'Activation Timing', rest: 10, active: 90, recover: 40, decay: 0.8, randomness: 0.15 },
-      { id: 'mechanicalCompliance', label: 'Mechanical Compliance', rest: 25, active: 100, recover: 55, decay: 0.4, randomness: 0.12 },
-      { id: 'structuralAlignment', label: 'Structural Alignment', rest: 30, active: 95, recover: 60, decay: 0.3, randomness: 0.1 },
-      { id: 'signalFidelity', label: 'Signal Fidelity', rest: 20, active: 100, recover: 50, decay: 0.5, randomness: 0.18 }
+      { id: 'metabolicFlux', label: 'Metabolic Flux', rest: 22, active: 85, recover: 53, decay: 0.5, randomness: 0.1 },
+      { id: 'functionalOutput', label: 'Functional Output', rest: 18, active: 79, recover: 16, decay: 0.6, randomness: 0.08 },
+      { id: 'activationTiming', label: 'Activation Timing', rest: 42, active: 88, recover: 14, decay: 0.8, randomness: 0.15 },
+      { id: 'mechanicalCompliance', label: 'Mechanical Compliance', rest: 56, active: 60, recover: 48, decay: 0.4, randomness: 0.12 },
+      { id: 'structuralAlignment', label: 'Structural Alignment', rest: 84, active: 90, recover: 86, decay: 0.3, randomness: 0.1 },
+      { id: 'signalFidelity', label: 'Signal Fidelity', rest: 76, active: 92, recover: 19, decay: 0.5, randomness: 0.18 }
     ],
     scale: 'cm'
   },
@@ -119,10 +119,10 @@ const videoSections = [
     title: 'Swarm',
     subtitle: 'Microtubule Swarms',
     dataPoints: [
-      { id: 'forceProduction', label: 'Force Production', rest: 15, active: 95, recover: 40, decay: 0.6, randomness: 0.15 },
-      { id: 'controlSignal', label: 'Control Signal', rest: 20, active: 100, recover: 50, decay: 0.7, randomness: 0.12 },
-      { id: 'compliance', label: 'Compliance', rest: 40, active: 80, recover: 60, decay: 0.3, randomness: 0.08 },
-      { id: 'configurationalEntropy', label: 'Configurational Entropy', rest: 70, active: 20, recover: 45, decay: 0.4, randomness: 0.1 }
+      { id: 'forceProduction', label: 'Force Production', rest: 25, active: 81, recover: 12, decay: 0.6, randomness: 0.15 },
+      { id: 'controlSignal', label: 'Control Signal', rest: 40, active: 74, recover: 21, decay: 0.7, randomness: 0.12 },
+      { id: 'compliance', label: 'Compliance', rest: 88, active: 10, recover: 83, decay: 0.3, randomness: 0.08 },
+      { id: 'configurationalEntropy', label: 'Configurational Entropy', rest: 72, active: 28, recover: 30, decay: 0.4, randomness: 0.1 }
     ],
     scale: 'μm'
   },
@@ -131,12 +131,12 @@ const videoSections = [
     title: 'Myosin',
     subtitle: 'Myosin Motors',
     dataPoints: [
-      { id: 'crossbridgeTurnover', label: 'Cross-bridge Turnover', rest: 10, active: 100, recover: 40, decay: 0.1, randomness: 0.2 },
-      { id: 'atpRegeneration', label: 'ATP Regeneration', rest: 30, active: 95, recover: 60, decay: 0.5, randomness: 0.15 },
-      { id: 'extentOfReaction', label: 'Extent of Reaction', rest: 15, active: 90, recover: 45, decay: 0.6, randomness: 0.18 },
-      { id: 'molecularFatigue', label: 'Molecular Fatigue', rest: 20, active: 85, recover: 70, decay: 0.3, randomness: 0.1 },
-      { id: 'externalLoad', label: 'External Load', rest: 25, active: 100, recover: 50, decay: 0.7, randomness: 0.12 },
-      { id: 'susceptibility', label: 'Susceptibility', rest: 40, active: 80, recover: 55, decay: 0.4, randomness: 0.08 }
+      { id: 'crossbridgeTurnover', label: 'Cross-bridge Turnover', rest: 46, active: 87, recover: 62, decay: 0.1, randomness: 0.2 },
+      { id: 'atpRegeneration', label: 'ATP Regeneration', rest: 19, active: 58, recover: 91, decay: 0.5, randomness: 0.15 },
+      { id: 'extentOfReaction', label: 'Extent of Reaction', rest: 23, active: 84, recover: 11, decay: 0.6, randomness: 0.18 },
+      { id: 'molecularFatigue', label: 'Molecular Fatigue', rest: 14, active: 29, recover: 88, decay: 0.3, randomness: 0.1 },
+      { id: 'externalLoad', label: 'External Load', rest: 51, active: 93, recover: 77, decay: 0.7, randomness: 0.12 },
+      { id: 'susceptibility', label: 'Susceptibility', rest: 79, active: 16, recover: 43, decay: 0.4, randomness: 0.08 }
     ],
     scale: 'nm'
   }
