@@ -52,9 +52,9 @@ const initialTweaks = typeof TWEAKS !== 'undefined' ? TWEAKS : {
 // ============================================================================
 
 const STATES = {
-  CALM: 'CALM',
-  EXCITED: 'EXCITED',
-  RECOVERING: 'RECOVERING'
+  REST: 'REST',
+  ACTIVE: 'ACTIVE',
+  RECOVER: 'RECOVER'
 };
 
 const LEVELS = ['predator', 'flock', 'heart', 'swarm', 'myosin'];
@@ -77,35 +77,67 @@ const videoSections = [
     id: 'predator',
     title: 'Predator',
     subtitle: 'Bird of Prey',
-    dataPoints: ['Blood Sugar', 'Speed', 'Reation Time', 'Sensory Confidence', 'Success Probability', 'Time to Strike'],
+    dataPoints: [
+      { id: 'bloodSugar', label: 'Blood Sugar', rest: 17, active: 50, recover: 83, decay: 0.3, randomness: 0.08 },
+      { id: 'speed', label: 'Speed', rest: 15, active: 80, recover: 20, decay: 0.5, randomness: 0.12 },
+      { id: 'reactionTime', label: 'Reation Time', rest: 45, active: 75, recover: 25, decay: 0.6, randomness: 0.15 },
+      { id: 'sensoryConfidence', label: 'Sensory Confidence', rest: 55, active: 85, recover: 50, decay: 0.4, randomness: 0.1 },
+      { id: 'successProbability', label: 'Success Probability', rest: 20, active: 78, recover: 18, decay: 0.2, randomness: 0.18 },
+      { id: 'timeToStrike', label: 'Time to Strike', rest: 48, active: 82, recover: 22, decay: 0.7, randomness: 0.2 }
+    ],
     scale: 'meter'
   },
   {
     id: 'flock',
     title: 'Flock',
     subtitle: 'Collective Behavior',
-    dataPoints: ['Group Kinetic Energy', 'Mean Inter-Individual Distance', 'Directional Alignment Variance', 'Obstacle Avoidance', 'Response Latency'],
+    dataPoints: [
+      { id: 'groupKineticEnergy', label: 'Group Kinetic Energy', rest: 52, active: 78, recover: 58, decay: 0.4, randomness: 0.15 },
+      { id: 'meanInterIndividualDistance', label: 'Mean Inter-Individual Distance', rest: 47, active: 70, recover: 80, decay: 0.3, randomness: 0.12 },
+      { id: 'directionalAlignmentVariance', label: 'Directional Alignment Variance', rest: 75, active: 22, recover: 72, decay: 0.5, randomness: 0.1 },
+      { id: 'obstacleAvoidance', label: 'Obstacle Avoidance', rest: 82, active: 55, recover: 60, decay: 0.6, randomness: 0.18 },
+      { id: 'responseLatency', label: 'Response Latency', rest: 44, active: 18, recover: 77, decay: 0.7, randomness: 0.2 }
+    ],
     scale: 'meter'
   },
   {
     id: 'heart',
     title: 'Heart',
     subtitle: 'Heart Cells',
-    dataPoints: ['Metabolic Flux', 'Functional Output', 'Activation Timing', 'Mechanical Compliance', 'Structural Alignment', 'Signal Fidelity'],
+    dataPoints: [
+      { id: 'metabolicFlux', label: 'Metabolic Flux', rest: 22, active: 85, recover: 53, decay: 0.5, randomness: 0.1 },
+      { id: 'functionalOutput', label: 'Functional Output', rest: 18, active: 79, recover: 16, decay: 0.6, randomness: 0.08 },
+      { id: 'activationTiming', label: 'Activation Timing', rest: 42, active: 88, recover: 14, decay: 0.8, randomness: 0.15 },
+      { id: 'mechanicalCompliance', label: 'Mechanical Compliance', rest: 56, active: 60, recover: 48, decay: 0.4, randomness: 0.12 },
+      { id: 'structuralAlignment', label: 'Structural Alignment', rest: 84, active: 90, recover: 86, decay: 0.3, randomness: 0.1 },
+      { id: 'signalFidelity', label: 'Signal Fidelity', rest: 76, active: 92, recover: 19, decay: 0.5, randomness: 0.18 }
+    ],
     scale: 'cm'
   },
   {
     id: 'swarm',
     title: 'Swarm',
     subtitle: 'Microtubule Swarms',
-    dataPoints: ['Force Production', 'Control Signal', 'Compliance', 'Configurational Entropy'],
+    dataPoints: [
+      { id: 'forceProduction', label: 'Force Production', rest: 25, active: 81, recover: 12, decay: 0.6, randomness: 0.15 },
+      { id: 'controlSignal', label: 'Control Signal', rest: 40, active: 74, recover: 21, decay: 0.7, randomness: 0.12 },
+      { id: 'compliance', label: 'Compliance', rest: 88, active: 10, recover: 83, decay: 0.3, randomness: 0.08 },
+      { id: 'configurationalEntropy', label: 'Configurational Entropy', rest: 72, active: 28, recover: 30, decay: 0.4, randomness: 0.1 }
+    ],
     scale: 'μm'
   },
   {
     id: 'myosin',
     title: 'Myosin',
     subtitle: 'Myosin Motors',
-    dataPoints: ['Cross-bridge Turnover', 'ATP Regeneration', 'Extent of Reaction', 'Molecular Fatigue', 'External Load', 'Susceptibility'],
+    dataPoints: [
+      { id: 'crossbridgeTurnover', label: 'Cross-bridge Turnover', rest: 46, active: 87, recover: 62, decay: 0.1, randomness: 0.2 },
+      { id: 'atpRegeneration', label: 'ATP Regeneration', rest: 19, active: 58, recover: 91, decay: 0.5, randomness: 0.15 },
+      { id: 'extentOfReaction', label: 'Extent of Reaction', rest: 23, active: 84, recover: 11, decay: 0.6, randomness: 0.18 },
+      { id: 'molecularFatigue', label: 'Molecular Fatigue', rest: 14, active: 29, recover: 88, decay: 0.3, randomness: 0.1 },
+      { id: 'externalLoad', label: 'External Load', rest: 51, active: 93, recover: 77, decay: 0.7, randomness: 0.12 },
+      { id: 'susceptibility', label: 'Susceptibility', rest: 79, active: 16, recover: 43, decay: 0.4, randomness: 0.08 }
+    ],
     scale: 'nm'
   }
 ];
@@ -170,13 +202,13 @@ const App = () => {
 
   // Get video path based on state
   const getVideoPath = (levelId, state) => {
-    const stateFile = (state || STATES.CALM).toLowerCase();
+    const stateFile = (state || STATES.REST).toLowerCase();
     return `videos/${levelId}/${stateFile}.mp4`;
   };
 
   // Render bar based on selected style
-  const renderBar = (width, isRecovering) => {
-    const fillColor = isRecovering ? tweaks.bars.recoveringColor : tweaks.bars.fillColor;
+  const renderBar = (width) => {
+    const fillColor = tweaks.bars.fillColor;
     const bgColor = tweaks.bars.backgroundColor;
     const barHeight = tweaks.bars.height;
     const borderRadius = tweaks.bars.borderRadius;
@@ -317,7 +349,7 @@ const App = () => {
         );
 
       default:
-        return renderBar.call(this, width, isDead);
+        return renderBar.call(this, width);
     }
   };
 
@@ -334,15 +366,16 @@ const App = () => {
 
     videoSections.forEach(section => {
       section.dataPoints.forEach(point => {
-        const key = `${section.id}-${point}`;
-        const randomValue = Math.random() * 100;
-        initialValues[key] = randomValue.toFixed(1);
-        initialTargets[key] = randomValue;
+        const key = `${section.id}-${point.id}`;
+        // Initialize with the REST state value
+        const restValue = point.rest;
+        initialValues[key] = restValue.toFixed(1);
+        initialTargets[key] = restValue;
         // Random lerp rate between 0.02 and 0.3
         initialRates[key] = 0.02 + Math.random() * 0.28;
       });
-      // Initialize all levels to CALM state
-      initialStates[section.id] = STATES.CALM;
+      // Initialize all levels to REST state
+      initialStates[section.id] = STATES.REST;
     });
 
     setDataValues(initialValues);
@@ -485,22 +518,27 @@ const App = () => {
   }, []);
 
   // ============================================================================
-  // TARGET VALUE GENERATION
+  // TARGET VALUE GENERATION (STATE-BASED)
   // ============================================================================
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      videoSections.forEach(section => {
-        section.dataPoints.forEach(point => {
-          const key = `${section.id}-${point}`;
-          // Generate new random target value
-          targetValuesRef.current[key] = Math.random() * 100;
-        });
-      });
-    }, 800); // Generate new targets every 800ms
+    // When state changes, update target values for all data points
+    videoSections.forEach(section => {
+      const currentState = levelStates[section.id];
+      if (!currentState) return;
 
-    return () => clearInterval(interval);
-  }, []);
+      section.dataPoints.forEach(point => {
+        const key = `${section.id}-${point.id}`;
+        // Get the target value based on current state
+        const stateKey = currentState.toLowerCase(); // 'REST', 'ACTIVE', or 'RECOVER' -> 'rest', 'active', 'recover'
+        const targetValue = point[stateKey];
+
+        if (targetValue !== undefined) {
+          targetValuesRef.current[key] = targetValue;
+        }
+      });
+    });
+  }, [levelStates]); // Re-run when state changes
 
   // ============================================================================
   // ANIMATION LOOP (60fps)
@@ -522,19 +560,37 @@ const App = () => {
         fpsUpdateTime = currentTime;
       }
 
-      // Update data values with lerping
+      // Update data values with lerping, decay, and randomness
       setDataValues(prevValues => {
         const newValues = {};
 
         videoSections.forEach(section => {
           section.dataPoints.forEach(point => {
-            const key = `${section.id}-${point}`;
+            const key = `${section.id}-${point.id}`;
             const currentValue = parseFloat(prevValues[key]) || 0;
             const targetValue = targetValuesRef.current[key] || currentValue;
             const lerpRate = lerpRatesRef.current[key] || 0.1;
 
+            // Get decay and randomness parameters (default to 0 if not specified)
+            const decay = point.decay !== undefined ? point.decay : 0;
+            const randomness = point.randomness !== undefined ? point.randomness : 0;
+
+            // Apply randomness: fluctuation relative to 0-100 range
+            const randomFluctuation = (Math.random() - 0.5) * 2 * randomness * 100;
+
             // Lerp towards target value
-            const newValue = lerp(currentValue, targetValue, lerpRate);
+            let newValue = lerp(currentValue, targetValue, lerpRate);
+
+            // Apply randomness
+            newValue += randomFluctuation;
+
+            // Apply decay: pull toward target (decay closer to 1 = settles faster)
+            // This reduces the effect of randomness over time
+            newValue = lerp(newValue, targetValue, decay);
+
+            // Clamp to 0-100 range
+            newValue = Math.max(0, Math.min(100, newValue));
+
             newValues[key] = newValue.toFixed(1);
           });
         });
@@ -600,8 +656,147 @@ const App = () => {
   }, [levelStates]);
 
   // ============================================================================
+  // GAMEPAD/ARCADE BUTTON SUPPORT
+  // ============================================================================
+
+  useEffect(() => {
+    let previousButtonStates = {};
+    let buttonPressTime = {};
+    let lastTriggerTime = 0;
+    let animationId = null;
+    let isPolling = false;
+
+    const COOLDOWN_MS = 1000; // 1 second cooldown between triggers
+    const MIN_PRESS_DURATION_MS = 50; // Button must be pressed for at least 50ms
+    const ANALOG_THRESHOLD = 0.5; // Analog button threshold
+
+    const checkGamepadInput = () => {
+      const gamepads = navigator.getGamepads();
+      const currentTime = performance.now();
+
+      for (let i = 0; i < gamepads.length; i++) {
+        const gamepad = gamepads[i];
+        if (!gamepad) continue;
+
+        // Check Button 0 - your blue arcade button
+        const button0 = gamepad.buttons[0];
+        const buttonKey = `${i}-0`;
+
+        // Check if button is pressed (handle both digital and analog buttons)
+        const isPressed = button0.pressed || button0.value > ANALOG_THRESHOLD;
+
+        if (isPressed) {
+          // Button is currently pressed
+          if (!previousButtonStates[buttonKey]) {
+            // New press detected - record the time
+            buttonPressTime[buttonKey] = currentTime;
+            previousButtonStates[buttonKey] = true;
+          }
+        } else {
+          // Button is released
+          if (previousButtonStates[buttonKey]) {
+            // Button was just released - check if it was a valid press
+            const pressDuration = currentTime - buttonPressTime[buttonKey];
+            const timeSinceLastTrigger = currentTime - lastTriggerTime;
+
+            // Only trigger if:
+            // 1. Press duration is long enough (filters noise)
+            // 2. Enough time has passed since last trigger (cooldown)
+            if (pressDuration >= MIN_PRESS_DURATION_MS && timeSinceLastTrigger >= COOLDOWN_MS) {
+              triggerStateSequence();
+              lastTriggerTime = currentTime;
+            }
+          }
+          previousButtonStates[buttonKey] = false;
+          buttonPressTime[buttonKey] = 0;
+        }
+      }
+
+      if (isPolling) {
+        animationId = requestAnimationFrame(checkGamepadInput);
+      }
+    };
+
+    // Event handlers for gamepad connection
+    const handleGamepadConnected = (e) => {
+      if (!isPolling) {
+        isPolling = true;
+        animationId = requestAnimationFrame(checkGamepadInput);
+      }
+    };
+
+    const handleGamepadDisconnected = (e) => {
+      // Check if any gamepads are still connected
+      const gamepads = navigator.getGamepads();
+      const hasGamepads = Array.from(gamepads).some(gp => gp !== null);
+
+      if (!hasGamepads && isPolling) {
+        isPolling = false;
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+      }
+    };
+
+    // Add event listeners
+    window.addEventListener('gamepadconnected', handleGamepadConnected);
+    window.addEventListener('gamepaddisconnected', handleGamepadDisconnected);
+
+    // Check if gamepad is already connected (in case user already pressed a button)
+    const existingGamepads = navigator.getGamepads();
+    const hasExistingGamepads = Array.from(existingGamepads).some(gp => gp !== null);
+    if (hasExistingGamepads) {
+      isPolling = true;
+      animationId = requestAnimationFrame(checkGamepadInput);
+    }
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('gamepadconnected', handleGamepadConnected);
+      window.removeEventListener('gamepaddisconnected', handleGamepadDisconnected);
+      isPolling = false;
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+    };
+  }, [levelStates]);
+
+  // ============================================================================
   // KEYBOARD SHORTCUTS
   // ============================================================================
+
+  // Helper function to trigger the state sequence
+  const triggerStateSequence = () => {
+    // Check if all levels are in CALM state
+    const allCalm = Object.values(levelStates).every(state => state === STATES.CALM);
+
+    if (allCalm) {
+      // Transition all levels to EXCITED
+      const newStates = {};
+      LEVELS.forEach(level => {
+        newStates[level] = STATES.EXCITED;
+      });
+      setLevelStates(newStates);
+
+      // After 10 seconds, transition to RECOVERING
+      setTimeout(() => {
+        const recoveringStates = {};
+        LEVELS.forEach(level => {
+          recoveringStates[level] = STATES.RECOVERING;
+        });
+        setLevelStates(recoveringStates);
+
+        // After another 10 seconds, return to CALM
+        setTimeout(() => {
+          const calmStates = {};
+          LEVELS.forEach(level => {
+            calmStates[level] = STATES.CALM;
+          });
+          setLevelStates(calmStates);
+        }, 10000);
+      }, 10000);
+    }
+  };
 
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -610,36 +805,36 @@ const App = () => {
         setDebugMode(prev => !prev);
       }
 
-      // Spacebar: Trigger state sequence for all levels (CALM → EXCITED → RECOVERING → CALM)
-      if (e.key === ' ') {
+      // Spacebar: Trigger state sequence for all levels (REST → ACTIVE → RECOVER → REST)
+      if (e.key === ' ' || e.key === 'a' || e.key === 'A') {
         e.preventDefault();
 
-        // Check if all levels are in CALM state
-        const allCalm = Object.values(levelStates).every(state => state === STATES.CALM);
+        // Check if all levels are in REST state
+        const allRest = Object.values(levelStates).every(state => state === STATES.REST);
 
-        if (allCalm) {
-          // Transition all levels to EXCITED
+        if (allRest) {
+          // Transition all levels to ACTIVE
           const newStates = {};
           LEVELS.forEach(level => {
-            newStates[level] = STATES.EXCITED;
+            newStates[level] = STATES.ACTIVE;
           });
           setLevelStates(newStates);
 
-          // After 10 seconds, transition to RECOVERING
+          // After 10 seconds, transition to RECOVER
           setTimeout(() => {
-            const recoveringStates = {};
+            const recoverStates = {};
             LEVELS.forEach(level => {
-              recoveringStates[level] = STATES.RECOVERING;
+              recoverStates[level] = STATES.RECOVER;
             });
-            setLevelStates(recoveringStates);
+            setLevelStates(recoverStates);
 
-            // After another 10 seconds, return to CALM
+            // After another 10 seconds, return to REST
             setTimeout(() => {
-              const calmStates = {};
+              const restStates = {};
               LEVELS.forEach(level => {
-                calmStates[level] = STATES.CALM;
+                restStates[level] = STATES.REST;
               });
-              setLevelStates(calmStates);
+              setLevelStates(restStates);
             }, 10000);
           }, 10000);
         }
@@ -647,13 +842,13 @@ const App = () => {
 
       // Debug: Force states (for testing)
       if (e.key === '1') {
-        setLevelStates(prev => ({ ...prev, predator: STATES.CALM }));
+        setLevelStates(prev => ({ ...prev, predator: STATES.REST }));
       }
       if (e.key === '2') {
-        setLevelStates(prev => ({ ...prev, predator: STATES.EXCITED }));
+        setLevelStates(prev => ({ ...prev, predator: STATES.ACTIVE }));
       }
       if (e.key === '3') {
-        setLevelStates(prev => ({ ...prev, heart: STATES.RECOVERING }));
+        setLevelStates(prev => ({ ...prev, heart: STATES.RECOVER }));
       }
     };
 
@@ -722,8 +917,7 @@ const App = () => {
       }}>
         {shapeConfigs.map((config) => {
           const section = videoSections.find(s => s.id === config.id);
-          const currentState = levelStates[section.id] || STATES.CALM;
-          const isRecovering = currentState === STATES.RECOVERING;
+          const currentState = levelStates[section.id] || STATES.REST;
 
           return (
             <div key={section.id} style={{
@@ -787,10 +981,10 @@ const App = () => {
                       padding: '2px 8px',
                       borderRadius: '4px',
                       display: 'inline-block',
-                      backgroundColor: currentState === STATES.RECOVERING ? tweaks.stateBadges.recovering.background :
-                        currentState === STATES.EXCITED ? tweaks.stateBadges.excited.background : tweaks.stateBadges.calm.background,
-                      color: currentState === STATES.RECOVERING ? tweaks.stateBadges.recovering.text :
-                        currentState === STATES.EXCITED ? tweaks.stateBadges.excited.text : tweaks.stateBadges.calm.text,
+                      backgroundColor: currentState === STATES.RECOVER ? tweaks.stateBadges.recover.background :
+                        currentState === STATES.ACTIVE ? tweaks.stateBadges.active.background : tweaks.stateBadges.rest.background,
+                      color: currentState === STATES.RECOVER ? tweaks.stateBadges.recover.text :
+                        currentState === STATES.ACTIVE ? tweaks.stateBadges.active.text : tweaks.stateBadges.rest.text,
                       fontSize: tweaks.fonts.stateBadge
                     }}>
                       {currentState}
@@ -801,7 +995,7 @@ const App = () => {
                 {/* Data points */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: parseFloat(tweaks.overlay.dataPointGap) >= 0 ? tweaks.overlay.dataPointGap : '0px' }}>
                   {section.dataPoints.map((dataPoint, dpIndex) => {
-                    const key = `${section.id}-${dataPoint}`;
+                    const key = `${section.id}-${dataPoint.id}`;
                     const value = dataValues[key] || '0.0';
                     const width = parseFloat(value);
                     const lerpRate = lerpRatesRef.current[key];
@@ -826,7 +1020,7 @@ const App = () => {
                           color: tweaks.colors.labelColor,
                           flexShrink: 0
                         }}>
-                          {dataPoint}
+                          {dataPoint.label}
                           {debugMode && DEBUG_CONFIG.SHOW_LERP_RATES && lerpRate && (
                             <span style={{ color: tweaks.colors.lerpRateColor, marginLeft: '4px', fontSize: tweaks.fonts.lerpRate }}>
                               ({lerpRate.toFixed(2)})
@@ -840,7 +1034,7 @@ const App = () => {
                           width: tweaks.bars.width === 'auto' ? 'auto' : tweaks.bars.width,
                           minWidth: tweaks.bars.width === 'auto' ? '200px' : 'auto'
                         }}>
-                          {renderBar(width, isRecovering)}
+                          {renderBar(width)}
                         </div>
 
                         {/* Debug: Show value if debug mode is on */}
@@ -911,8 +1105,8 @@ const App = () => {
             {Object.entries(levelStates).map(([level, state]) => (
               <div key={level} className="flex items-center justify-between text-[10px]">
                 <span className="text-gray-500 uppercase">{level}:</span>
-                <span className={`px-2 py-0.5 rounded ${state === STATES.RECOVERING ? 'bg-gray-700 text-gray-400' :
-                  state === STATES.EXCITED ? 'bg-red-600 text-white' : 'bg-blue-600 text-white'
+                <span className={`px-2 py-0.5 rounded ${state === STATES.RECOVER ? 'bg-gray-700 text-gray-400' :
+                  state === STATES.ACTIVE ? 'bg-red-600 text-white' : 'bg-blue-600 text-white'
                   }`}>
                   {state}
                 </span>
@@ -925,9 +1119,9 @@ const App = () => {
       {/* Instructions (only in debug mode) */}
       {debugMode && (
         <div className="fixed bottom-4 left-4 text-gray-700 text-xs space-y-1">
-          <div>Press SPACE to trigger sequence (CALM → EXCITED → RECOVERING → CALM)</div>
+          <div>Press SPACE to trigger sequence (REST → ACTIVE → RECOVER → REST)</div>
           <div>Press D for debug | ESC to exit</div>
-          <div>Debug: 1: Predator CALM | 2: Predator EXCITED | 3: Heart RECOVERING</div>
+          <div>Debug: 1: Predator REST | 2: Predator ACTIVE | 3: Heart RECOVER</div>
         </div>
       )}
     </div>
