@@ -16,8 +16,8 @@ let powerSaveBlockerId;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    fullscreen: false,
-    frame: true,
+    fullscreen: process.env.NODE_ENV !== 'development',
+    frame: process.env.NODE_ENV === 'development',
     backgroundColor: '#000000',
     webPreferences: {
       nodeIntegration: true,

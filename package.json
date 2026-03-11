@@ -19,14 +19,15 @@
       "icon": "build/icon.icns",
       "target": [
         {
-          "target": "dmg",
+          "target": "zip",
           "arch": ["x64", "arm64"]
         }
       ],
       "minimumSystemVersion": "10.13.0",
-      "hardenedRuntime": true,
+      "hardenedRuntime": false,
       "gatekeeperAssess": false,
-      "type": "distribution"
+      "identity": null,
+      "type": "development"
     },
     "win": {
       "icon": "build/icon.ico",

@@ -806,7 +806,7 @@ const App = () => {
       }
 
       // Spacebar: Trigger state sequence for all levels (REST → ACTIVE → RECOVER → REST)
-      if (e.key === ' ') {
+      if (e.key === ' ' || e.key === 'a' || e.key === 'A') {
         e.preventDefault();
 
         // Check if all levels are in REST state
